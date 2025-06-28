@@ -15,7 +15,7 @@ Utiliza **aço SAE 1008 (Sut = 310 MPa, Se = 155 MPa)**.
 """)
 
 # Diagramas
-diagramas = Image.open("/mnt/data/A_pair_of_technical_engineering_diagrams_in_black_.png")
+diagramas = Image.open("A_pair_of_technical_engineering_diagrams_in_black_.png")
 st.image(diagramas, caption="Diagramas de análise: cadeira inclinada e cadeira em 4 apoios")
 
 # Entradas

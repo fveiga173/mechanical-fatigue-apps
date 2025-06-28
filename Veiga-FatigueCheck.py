@@ -5,7 +5,7 @@ from PIL import Image
 
 # Título e descrição
 st.title("Veiga FatigueCheck - Análise de resistência em cadeiras soldadas")
-st.markdown("Este app realiza análises de fadiga em cadeiras metálicas conforme a **ISO 7173**, considerando dois casos com aço SAE 1008 (Sut=310 MPa, Se=155 MPa). Utilize capturas de tela para registrar os resultados em PDF quando necessário.")
+st.markdown("Este app realiza análises de resistência em cadeiras metálicas conforme a **ISO 7173**, considerando dois casos com aço SAE 1008 (Sut=310 MPa, Sy=201 MPa, Se=155 MPa). Utilize capturas de tela para registrar os resultados em PDF quando necessário.")
 
 # Imagem
 try:
@@ -22,8 +22,8 @@ largura_cordao = st.number_input("Largura do cordão de solda (mm)", value=6.0)
 
 # Constantes
 Sut = 310
-Se = 0.5 * Sut
-Sy = 0.65 * Sut
+Sy = 0.65 * Sut  # ≈ 201,5 MPa
+Se = 0.5 * Sut   # 155 MPa
 FS = 1
 a_ciclo = 1e6
 b_ciclo = 5
@@ -43,7 +43,6 @@ else:
 # Caso 1: cadeira inclinada
 sigma_momento = M * c / I
 
-
 # Caso 2: carga axial
 F_axial = 325
 sigma_axial = F_axial / A_solda
@@ -54,21 +53,21 @@ st.subheader("Resultados")
 
 st.markdown("**Caso 1: Cadeira Inclinada**")
 st.write(f"Tensão por momento: {sigma_momento:.2f} MPa")
-st.write(f"Tensão admissível (Limite de Escoamento): {Sy:.2f} MPa")
-st.write(f"Tensão admissível (Limite de Ruptura): {Sy:.2f} MPa")
-if sigma_momento < Sy:
-    st.success("✅ A estrutura RESISTE ao carregamento com momento.")
-else:
-    if Sy < sigma_momento < Sut:
-        st.error("❌ A estrutura NÃO RESISTE ao carregamento com momento, podendo ocorrer deformação.")
+st.write(f"Limite de escoamento (Sy): {Sy:.2f} MPa")
+st.write(f"Limite de ruptura (Sut): {Sut:.2f} MPa")
 
+if sigma_momento < Sy:
+    st.success("✅ A estrutura RESISTE ao carregamento com momento (sem deformação permanente).")
+elif Sy <= sigma_momento < Sut:
+    st.warning("⚠️ A estrutura NÃO RESISTE ao carregamento sem deformação permanente. Pode ocorrer **deformação plástica**, mas não ruptura imediata.")
 else:
-    st.error("❌ A estrutura NÃO RESISTE ao carregamento com momento, podendo ocorrer ruptura total.")
+    st.error("❌ A estrutura NÃO RESISTE ao carregamento. **Pode ocorrer ruptura total.**")
 
 st.markdown("**Caso 2: Cadeira com 4 Apoios**")
 st.write(f"Tensão axial: {sigma_axial:.2f} MPa")
 st.write(f"Vida estimada: {N_ciclos:,.0f} ciclos")
+
 if sigma_axial < Sy:
-    st.success("✅ A solda RESISTE ao carregamento axial.")
+    st.success("✅ A solda RESISTE ao carregamento axial (sem deformação permanente).")
 else:
-    st.error("❌ A solda NÃO RESISTE ao carregamento axial, podendo ocorrer deformação.")
+    st.error("❌ A solda NÃO RESISTE ao carregamento axial, podendo ocorrer **deformação permanente ou ruptura em ciclos.**")

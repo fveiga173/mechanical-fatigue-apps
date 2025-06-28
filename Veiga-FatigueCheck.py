@@ -2,12 +2,10 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
-from fpdf import FPDF
-import io
 
 # Título e descrição
 st.title("Veiga FatigueCheck - Análise de Fadiga em Tubos de Cadeiras")
-st.markdown("Este app realiza análises de fadiga em cadeiras metálicas conforme a **ISO 7173**, considerando dois casos com aço SAE 1008 (Sut=310 MPa, Se=155 MPa).")
+st.markdown("Este app realiza análises de fadiga em cadeiras metálicas conforme a **ISO 7173**, considerando dois casos com aço SAE 1008 (Sut=310 MPa, Se=155 MPa). Utilize capturas de tela para registrar os resultados em PDF quando necessário.")
 
 # Imagem
 try:
@@ -81,12 +79,3 @@ ax.set_ylabel("Tensão Média (MPa)")
 ax.grid(True)
 ax.legend()
 st.pyplot(fig)
-
-# Gerar PDF
-if st.button("Salvar relatório em PDF"):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 8, txt=f"Veiga FatigueCheck - Relatório de Fadiga\n\nTipo de tubo: {tipo_tubo}\nLargura/diâmetro: {largura} mm\nEspessura: {espessura} mm\nLargura do cordão: {largura_cordao} mm\n\nCaso 1: Cadeira Inclinada\nTensão por momento: {sigma_momento:.2f} MPa\nTensão admissível: {sigma_adm:.2f} MPa\nResultado: {'RESISTE' if sigma_momento < sigma_adm else 'NÃO RESISTE'}\n\nCaso 2: Cadeira com 4 Apoios\nTensão axial: {sigma_axial:.2f} MPa\nVida estimada: {N_ciclos:,.0f} ciclos\nResultado: {'RESISTE' if sigma_axial < sigma_adm else 'NÃO RESISTE'}")
-    pdf_bytes = pdf.output(dest='S').encode('latin-1')
-    st.download_button(label="Clique para baixar o relatório em PDF", data=pdf_bytes, file_name="relatorio_fadiga.pdf", mime="application/pdf")

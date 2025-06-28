@@ -42,7 +42,7 @@ else:
 
 # Caso 1: cadeira inclinada
 sigma_momento = M * c / I
-sigma_adm = Sy / FS
+
 
 # Caso 2: carga axial
 F_axial = 325
@@ -54,29 +54,21 @@ st.subheader("Resultados")
 
 st.markdown("**Caso 1: Cadeira Inclinada**")
 st.write(f"Tensão por momento: {sigma_momento:.2f} MPa")
-st.write(f"Tensão admissível (Limite de Escoamento): {sigma_adm:.2f} MPa")
-if sigma_momento < sigma_adm:
+st.write(f"Tensão admissível (Limite de Escoamento): {Sy:.2f} MPa")
+st.write(f"Tensão admissível (Limite de Ruptura): {Sy:.2f} MPa")
+if sigma_momento < Sy and sigma_momento < Sy
     st.success("✅ A estrutura RESISTE ao carregamento com momento.")
-else:
-    st.error("❌ A estrutura NÃO RESISTE ao carregamento com momento.")
+else
+    if Sy < sigma_momento < sut
+    st.error("❌ A estrutura NÃO RESISTE ao carregamento com momento, podendo ocorrer deformação.")
+
+    else
+    st.error("❌ A estrutura NÃO RESISTE ao carregamento com momento, podendo ocorrer ruptura total.")
 
 st.markdown("**Caso 2: Cadeira com 4 Apoios**")
 st.write(f"Tensão axial: {sigma_axial:.2f} MPa")
 st.write(f"Vida estimada: {N_ciclos:,.0f} ciclos")
-if sigma_axial < sigma_adm:
+if sigma_axial < Sy:
     st.success("✅ A solda RESISTE ao carregamento axial.")
 else:
-    st.error("❌ A solda NÃO RESISTE ao carregamento axial.")
-
-# Gráfico de Goodman
-st.subheader("Diagrama de Goodman")
-fig, ax = plt.subplots()
-sigma_a_vals = np.linspace(0, Sut, 500)
-sigma_m_vals = Sut - (Sut / Se) * sigma_a_vals
-ax.plot(sigma_a_vals, sigma_m_vals, label="Linha de Goodman", color="red")
-ax.axhline(y=sigma_adm, color='green', linestyle='--', label="Tensão admissível")
-ax.set_xlabel("Tensão Alternada (MPa)")
-ax.set_ylabel("Tensão Média (MPa)")
-ax.grid(True)
-ax.legend()
-st.pyplot(fig)
+    st.error("❌ A solda NÃO RESISTE ao carregamento axial, podendo ocorrer deformação.")

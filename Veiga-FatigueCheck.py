@@ -62,7 +62,7 @@ else:
     if Sy < sigma_momento < Sut:
         st.error("❌ A estrutura NÃO RESISTE ao carregamento com momento, podendo ocorrer deformação.")
 
-else:
+    else:
     st.error("❌ A estrutura NÃO RESISTE ao carregamento com momento, podendo ocorrer ruptura total.")
 
 st.markdown("**Caso 2: Cadeira com 4 Apoios**")

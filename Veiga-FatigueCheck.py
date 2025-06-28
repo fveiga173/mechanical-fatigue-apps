@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 # Título e descrição
-st.title("Veiga FatigueCheck - Análise de Fadiga em Tubos de Cadeiras")
+st.title("Veiga FatigueCheck - Análise de resistência em cadeiras soldadas")
 st.markdown("Este app realiza análises de fadiga em cadeiras metálicas conforme a **ISO 7173**, considerando dois casos com aço SAE 1008 (Sut=310 MPa, Se=155 MPa). Utilize capturas de tela para registrar os resultados em PDF quando necessário.")
 
 # Imagem

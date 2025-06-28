@@ -23,6 +23,7 @@ largura_cordao = st.number_input("Largura do cordão de solda (mm)", value=6.0)
 # Constantes
 Sut = 310
 Se = 0.5 * Sut
+Sy = 0.65 * Sut
 FS = 1
 a_ciclo = 1e6
 b_ciclo = 5
@@ -41,7 +42,7 @@ else:
 
 # Caso 1: cadeira inclinada
 sigma_momento = M * c / I
-sigma_adm = Se / FS
+sigma_adm = Sy / FS
 
 # Caso 2: carga axial
 F_axial = 325
@@ -53,7 +54,7 @@ st.subheader("Resultados")
 
 st.markdown("**Caso 1: Cadeira Inclinada**")
 st.write(f"Tensão por momento: {sigma_momento:.2f} MPa")
-st.write(f"Tensão admissível (Goodman): {sigma_adm:.2f} MPa")
+st.write(f"Tensão admissível (Limite de Escoamento): {sigma_adm:.2f} MPa")
 if sigma_momento < sigma_adm:
     st.success("✅ A estrutura RESISTE ao carregamento com momento.")
 else:

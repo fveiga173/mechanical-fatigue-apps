@@ -60,7 +60,7 @@ if sigma_momento < Sy:
     st.success("✅ A estrutura RESISTE ao carregamento com momento.")
 else:
     if Sy < sigma_momento < Sut:
-    st.error("❌ A estrutura NÃO RESISTE ao carregamento com momento, podendo ocorrer deformação.")
+        st.error("❌ A estrutura NÃO RESISTE ao carregamento com momento, podendo ocorrer deformação.")
 
 else:
     st.error("❌ A estrutura NÃO RESISTE ao carregamento com momento, podendo ocorrer ruptura total.")

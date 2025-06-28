@@ -56,10 +56,10 @@ st.markdown("**Caso 1: Cadeira Inclinada**")
 st.write(f"Tensão por momento: {sigma_momento:.2f} MPa")
 st.write(f"Tensão admissível (Limite de Escoamento): {Sy:.2f} MPa")
 st.write(f"Tensão admissível (Limite de Ruptura): {Sy:.2f} MPa")
-if sigma_momento < Sy and sigma_momento < Sy
+if sigma_momento < Sy
     st.success("✅ A estrutura RESISTE ao carregamento com momento.")
 else
-    if Sy < sigma_momento < sut
+    if Sy < sigma_momento < Sut
     st.error("❌ A estrutura NÃO RESISTE ao carregamento com momento, podendo ocorrer deformação.")
 
     else

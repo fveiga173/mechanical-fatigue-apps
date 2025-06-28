@@ -2,29 +2,23 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
+from fpdf import FPDF
 import io
 
 # Título e descrição
 st.title("Veiga FatigueCheck - Análise de Fadiga em Tubos de Cadeiras")
-st.markdown("""
-Este app realiza análises de fadiga em cadeiras metálicas conforme a **ISO 7173**, considerando:
-- **Caso 1:** Cadeira inclinada (15°) com carga de 950 N (475 N por tubo).
-- **Caso 2:** Cadeira com 4 apoios, carga total de 1300 N (325 N por pé).
+st.markdown("Este app realiza análises de fadiga em cadeiras metálicas conforme a **ISO 7173**, considerando dois casos com aço SAE 1008 (Sut=310 MPa, Se=155 MPa).")
 
-Utiliza **aço SAE 1008 (Sut = 310 MPa, Se = 155 MPa)**.
-""")
-
-# Diagramas
-diagramas = Image.open("A_pair_of_technical_engineering_diagrams_in_black_.png")
-st.image(diagramas, caption="Diagramas de análise: cadeira inclinada e cadeira em 4 apoios")
+# Imagem
+try:
+    diagramas = Image.open("A_pair_of_technical_engineering_diagrams_in_black_.png")
+    st.image(diagramas, caption="Diagramas de análise: cadeira inclinada e cadeira em 4 apoios")
+except:
+    st.info("Imagem de diagramas não encontrada no diretório. Coloque a imagem no mesmo repositório para visualização.")
 
 # Entradas
-st.header("Entradas")
 tipo_tubo = st.selectbox("Tipo de tubo", ["Quadrado", "Redondo"])
-if tipo_tubo == "Quadrado":
-    largura = st.number_input("Largura do tubo (mm)", value=20.0)
-else:
-    largura = st.number_input("Diâmetro externo do tubo (mm)", value=25.4)
+largura = st.number_input("Largura (quadrado) ou diâmetro externo (redondo) do tubo (mm)", value=20.0)
 espessura = st.number_input("Espessura do tubo (mm)", value=0.9)
 largura_cordao = st.number_input("Largura do cordão de solda (mm)", value=6.0)
 
@@ -36,35 +30,44 @@ a_ciclo = 1e6
 b_ciclo = 5
 M = 114710  # Momento
 
-# Cálculos
-d = largura - 2 * espessura if tipo_tubo == "Redondo" else largura - 2 * espessura
+# Cálculos gerais
 if tipo_tubo == "Quadrado":
     I = (largura * largura**3) / 12 - ((largura - 2 * espessura) * (largura - 2 * espessura)**3) / 12
     c = largura / 2
+    A_solda = 2 * largura_cordao * espessura
 else:
-    I = (np.pi / 64) * (largura**4 - d**4)
+    d_interno = largura - 2 * espessura
+    I = (np.pi / 64) * (largura**4 - d_interno**4)
     c = largura / 2
+    A_solda = np.pi * largura * espessura
 
+# Caso 1: cadeira inclinada
 sigma_momento = M * c / I
 sigma_adm = Se / FS
 
+# Caso 2: carga axial
 F_axial = 325
-A_solda = (2 * largura_cordao * espessura) if tipo_tubo == "Quadrado" else np.pi * largura * espessura
 sigma_axial = F_axial / A_solda
 N_ciclos = a_ciclo * (sigma_axial / Sut) ** (-b_ciclo)
 
-# Resultados organizados
-col1, col2 = st.columns(2)
-with col1:
-    st.subheader("Caso 1: Cadeira Inclinada")
-    st.write(f"Tensão por momento: **{sigma_momento:.1f} MPa**")
-    st.write(f"Tensão admissível (Goodman): **{sigma_adm:.1f} MPa**")
-    st.success("✅ Resiste.") if sigma_momento < sigma_adm else st.error("❌ Não resiste.")
-with col2:
-    st.subheader("Caso 2: Cadeira com 4 Apoios")
-    st.write(f"Tensão axial: **{sigma_axial:.1f} MPa**")
-    st.write(f"Vida estimada: **{N_ciclos:,.0f} ciclos**")
-    st.success("✅ Resiste.") if sigma_axial < sigma_adm else st.error("❌ Não resiste.")
+# Resultados
+st.subheader("Resultados")
+
+st.markdown("**Caso 1: Cadeira Inclinada**")
+st.write(f"Tensão por momento: {sigma_momento:.2f} MPa")
+st.write(f"Tensão admissível (Goodman): {sigma_adm:.2f} MPa")
+if sigma_momento < sigma_adm:
+    st.success("✅ A estrutura RESISTE ao carregamento com momento.")
+else:
+    st.error("❌ A estrutura NÃO RESISTE ao carregamento com momento.")
+
+st.markdown("**Caso 2: Cadeira com 4 Apoios**")
+st.write(f"Tensão axial: {sigma_axial:.2f} MPa")
+st.write(f"Vida estimada: {N_ciclos:,.0f} ciclos")
+if sigma_axial < sigma_adm:
+    st.success("✅ A solda RESISTE ao carregamento axial.")
+else:
+    st.error("❌ A solda NÃO RESISTE ao carregamento axial.")
 
 # Gráfico de Goodman
 st.subheader("Diagrama de Goodman")
@@ -78,3 +81,12 @@ ax.set_ylabel("Tensão Média (MPa)")
 ax.grid(True)
 ax.legend()
 st.pyplot(fig)
+
+# Gerar PDF
+if st.button("Salvar relatório em PDF"):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(0, 8, txt=f"Veiga FatigueCheck - Relatório de Fadiga\n\nTipo de tubo: {tipo_tubo}\nLargura/diâmetro: {largura} mm\nEspessura: {espessura} mm\nLargura do cordão: {largura_cordao} mm\n\nCaso 1: Cadeira Inclinada\nTensão por momento: {sigma_momento:.2f} MPa\nTensão admissível: {sigma_adm:.2f} MPa\nResultado: {'RESISTE' if sigma_momento < sigma_adm else 'NÃO RESISTE'}\n\nCaso 2: Cadeira com 4 Apoios\nTensão axial: {sigma_axial:.2f} MPa\nVida estimada: {N_ciclos:,.0f} ciclos\nResultado: {'RESISTE' if sigma_axial < sigma_adm else 'NÃO RESISTE'}")
+    pdf_bytes = pdf.output(dest='S').encode('latin-1')
+    st.download_button(label="Clique para baixar o relatório em PDF", data=pdf_bytes, file_name="relatorio_fadiga.pdf", mime="application/pdf")

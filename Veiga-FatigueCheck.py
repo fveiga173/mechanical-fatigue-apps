@@ -58,11 +58,11 @@ st.write(f"Tensão admissível (Limite de Escoamento): {Sy:.2f} MPa")
 st.write(f"Tensão admissível (Limite de Ruptura): {Sy:.2f} MPa")
 if sigma_momento < Sy
     st.success("✅ A estrutura RESISTE ao carregamento com momento.")
-else
+else:
     if Sy < sigma_momento < Sut
     st.error("❌ A estrutura NÃO RESISTE ao carregamento com momento, podendo ocorrer deformação.")
 
-    else
+else:
     st.error("❌ A estrutura NÃO RESISTE ao carregamento com momento, podendo ocorrer ruptura total.")
 
 st.markdown("**Caso 2: Cadeira com 4 Apoios**")

@@ -78,29 +78,3 @@ ax.set_ylabel("Tensão Média (MPa)")
 ax.grid(True)
 ax.legend()
 st.pyplot(fig)
-
-# Gerar PDF
-if st.button("Salvar relatório em PDF"):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt="Relatório de Fadiga - Veiga FatigueCheck", ln=True, align='C')
-    pdf.ln(10)
-    pdf.multi_cell(0, 8, txt=f"""
-Tipo de tubo: {tipo_tubo}
-Largura/Diâmetro: {largura} mm
-Espessura: {espessura} mm
-Largura do cordão: {largura_cordao} mm
-
-Caso 1: Cadeira Inclinada
-Tensão por momento: {sigma_momento:.1f} MPa
-Tensão admissível: {sigma_adm:.1f} MPa
-Resultado: {'Resiste' if sigma_momento < sigma_adm else 'Não resiste'}
-
-Caso 2: Cadeira com 4 Apoios
-Tensão axial: {sigma_axial:.1f} MPa
-Vida estimada: {N_ciclos:,.0f} ciclos
-Resultado: {'Resiste' if sigma_axial < sigma_adm else 'Não resiste'}
-""")
-    pdf_bytes = pdf.output(dest='S').encode('latin-1')
-    st.download_button(label="Clique para baixar o relatório em PDF", data=pdf_bytes, file_name="relatorio_fadiga.pdf", mime="application/pdf")

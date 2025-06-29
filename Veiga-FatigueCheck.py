@@ -67,7 +67,11 @@ else:
 
 # Verificação de fadiga com alerta se ultrapassar Sut
 if sigma_fadiga_admissivel > Sut:
-    st.error(f"❌ A tensão de fadiga admissível calculada ({sigma_fadiga_admissivel:.2f} MPa) excede o limite de ruptura ({Sut} MPa). O componente ROMPERIA antes de atingir {N_desejado:,} ciclos.")
+    if sigma_total < Sut:
+        st.success(f"✅ A tensão de fadiga admissível calculada ({sigma_fadiga_admissivel:.2f} MPa) excede o limite de ruptura ({Sut} MPa), mas como a tensão aplicada ({sigma_total:.2f} MPa) está abaixo de {Sut} MPa, o componente **NÃO ROMPE e RESISTE** ao ensaio de {N_desejado:,} ciclos.")
+    else:
+        st.error(f"❌ A tensão de fadiga admissível calculada ({sigma_fadiga_admissivel:.2f} MPa) excede o limite de ruptura ({Sut} MPa), e a tensão aplicada ({sigma_total:.2f} MPa) também excede, indicando ROMPIMENTO sob carga estática antes de {N_desejado:,} ciclos.")
+
 elif sigma_total < sigma_fadiga_admissivel:
     st.success(f"✅ Resiste ao ensaio de fadiga de {N_desejado:,} ciclos.")
 else:

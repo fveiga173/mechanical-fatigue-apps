@@ -15,6 +15,7 @@ largura = st.number_input("Largura (quadrado) ou diâmetro externo (redondo) do 
 espessuras_lista = [0.60, 0.75, 0.90, 1.06, 1.20, 1.50, 1.90]
 espessura = st.selectbox("Espessura da parede do tubo vertical (mm):", espessuras_lista, index=2)
 altura_encosto = st.number_input("Altura do centro do encosto (mm)", value=750)
+altura_assento = st.number_input("Altura do assento (mm)", value=450)
 N_lista = [12500, 25000, 50000, 100000, 200000]
 N_desejado = st.selectbox("Número de Ciclos:", N_lista, index=2)
 
@@ -29,8 +30,9 @@ b_ciclo = 5
 F_vertical = 237.5  # N por pé (assento)
 F_horizontal = 165  # N por pé traseiro (encosto)
 
-# Cálculo do momento gerado pelo encosto
-M = F_horizontal * altura_encosto  # N.mm
+
+braço_momento = altura_encosto - altura_assento  # mm
+M = F_horizontal * braço_momento  # N.mm
 
 # Área resistente real: largura do tubo horizontal x espessura do tubo vertical
 A_resistente = largura * espessura  # mm²

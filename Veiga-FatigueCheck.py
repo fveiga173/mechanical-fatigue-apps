@@ -3,23 +3,23 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Título e descrição
-st.title("Veiga FatigueCheck - Ensaio ISO 7173")
+st.title("Veiga FatigueCheck - Ensaio ISO 7173 (Ajustado)")
 st.markdown("""
 Este app verifica **deformação, ruptura e resistência a 50.000 ciclos** no ensaio de cadeiras metálicas conforme a **ISO 7173**, 
-calculando a tensão de tração na parede do tubo traseiro gerada pelo momento do encosto e a compressão do assento.
+calculando a tensão real de tração na parede do tubo traseiro causada pela solda e a compressão do assento.
 """)
 
 # Entradas
 tipo_tubo = st.selectbox("Tipo de tubo", ["Quadrado", "Redondo"])
-largura = st.number_input("Largura (quadrado) ou diâmetro externo (redondo) do tubo (mm)", value=22.22)
+largura = st.number_input("Largura (quadrado) ou diâmetro externo (redondo) do tubo horizontal (mm)", value=22.22)
 espessuras_lista = [0.60, 0.75, 0.90, 1.06, 1.20, 1.50, 1.90]
-espessura = st.selectbox("Selecione a espessura da parede do tubo (mm):", espessuras_lista, index=2)
+espessura = st.selectbox("Espessura da parede do tubo vertical (mm):", espessuras_lista, index=2)
+largura_solda = st.number_input("Largura efetiva do cordão de solda (mm):", value=6.0)
 
 # Constantes materiais e do ensaio
 Sut = 310  # MPa
 Sy = 0.65 * Sut  # 201 MPa
 Se = 0.5 * Sut  # 155 MPa
-FS = 1
 a_ciclo = 1e6
 b_ciclo = 5
 
@@ -31,32 +31,29 @@ altura_encosto = 450  # mm (altura da aplicação da força horizontal)
 # Cálculo do momento gerado pelo encosto
 M = F_horizontal * altura_encosto  # N.mm
 
-# Cálculo da área resistente na parede do tubo traseiro:
-if tipo_tubo == "Quadrado":
-    perimetro_solda = 2 * largura  # apenas superior e inferior
-else:
-    perimetro_solda = np.pi * largura  # solda total
+# Cálculo da área efetivamente tracionada pela solda na parede do tubo vertical
+# A_resistente = largura do tubo horizontal x largura da solda x espessura do tubo vertical
+A_resistente = largura * largura_solda * espessura  # mm²
 
-# Área efetiva onde a força se distribui (espessura da parede vezes perímetro)
-A_resistente = perimetro_solda * espessura  # mm²
+# Braço de alavanca (aproximado como metade da largura)
+d = largura / 2  # mm
 
-# Cálculo da tensão gerada pelo momento (traciona metade superior da parede)
-# Considera distribuição linear simplificada:
-sigma_momento = M / (A_resistente * (largura / 2))  # MPa
+# Tensão gerada pelo momento (tração na parede do tubo vertical)
+sigma_momento = M / (A_resistente * d)  # MPa
 
-# Cálculo da tensão de compressão pelo peso da pessoa:
+# Tensão de compressão pelo assento
 sigma_compressao = F_vertical / A_resistente  # MPa
 
 # Tensão total = tração (momento) - compressão
 sigma_total = sigma_momento - sigma_compressao  # MPa
 
 # Verificação de fadiga para 50.000 ciclos
-# Estimativa simplificada usando a curva de fadiga:
 N_desejado = 50000
 sigma_fadiga_admissivel = Se * (a_ciclo / N_desejado) ** (1 / b_ciclo)
 
 # Resultados
-st.subheader("Resultados do Ensaio ISO 7173")
+st.subheader("Resultados do Ensaio ISO 7173 (Ajustado)")
+st.write(f"Área tracionada pela solda: {A_resistente:.1f} mm²")
 st.write(f"Tensão por momento (tração): {sigma_momento:.2f} MPa")
 st.write(f"Tensão por compressão: {sigma_compressao:.2f} MPa")
 st.write(f"**Tensão total resultante na parede do tubo:** {sigma_total:.2f} MPa")
@@ -79,33 +76,25 @@ else:
 # COMPARAÇÃO POR ESPESSURA
 # ============================
 
-st.subheader("📊 Comparação por Espessura no Ensaio ISO 7173")
+st.subheader("📊 Comparação por Espessura no Ensaio ISO 7173 (Ajustado)")
 
-espessuras_lista = [0.60, 0.75, 0.90, 1.06, 1.20, 1.50, 1.90]  # mm
 sigma_totais = []
 
 for esp in espessuras_lista:
-    if tipo_tubo == "Quadrado":
-        perimetro_solda = 2 * largura  # apenas superior e inferior
-    else:
-        perimetro_solda = np.pi * largura  # solda total
+    A_resistente_esp = largura * largura_solda * esp
+    sigma_momento_esp = M / (A_resistente_esp * d)
+    sigma_compressao_esp = F_vertical / A_resistente_esp
+    sigma_total_esp = sigma_momento_esp - sigma_compressao_esp
+    sigma_totais.append(sigma_total_esp)
 
-    A_resistente = perimetro_solda * esp  # mm²
-    sigma_momento = M / (A_resistente * (largura / 2))  # MPa
-    sigma_compressao = F_vertical / A_resistente  # MPa
-    sigma_total = sigma_momento - sigma_compressao  # MPa
-    sigma_totais.append(sigma_total)
-
-# Definir cores destacando a espessura selecionada
+# Cores para destaque da espessura selecionada
 cores = ['skyblue' if esp != espessura else 'orange' for esp in espessuras_lista]
 
-# Gráfico de barras
 fig, ax = plt.subplots(figsize=(8, 5))
 bars = ax.bar(
     [str(e) for e in espessuras_lista],
     sigma_totais,
-    color=cores,
-    label='Tensão Total (MPa)'
+    color=cores
 )
 
 # Linhas de referência
@@ -114,7 +103,7 @@ ax.axhline(Sy, color='orange', linestyle='--', label=f'Sy = {Sy:.0f} MPa (Deform
 ax.axhline(sigma_fadiga_admissivel, color='green', linestyle='--',
            label=f'Se (50k ciclos) = {sigma_fadiga_admissivel:.0f} MPa (Fadiga)')
 
-# Anotação em cada barra
+# Anotações em cada barra
 for bar, sigma in zip(bars, sigma_totais):
     height = bar.get_height()
     ax.annotate(f"{sigma:.0f}",
@@ -125,7 +114,7 @@ for bar, sigma in zip(bars, sigma_totais):
 
 ax.set_xlabel("Espessura da Parede do Tubo (mm)")
 ax.set_ylabel("Tensão Total (MPa)")
-ax.set_title("Tensão Total x Espessura - Ensaio ISO 7173")
+ax.set_title("Tensão Total x Espessura - Ensaio ISO 7173 (Ajustado)")
 ax.grid(True, axis='y')
 ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=2)
 
@@ -134,7 +123,7 @@ st.pyplot(fig)
 # Comentário interpretativo
 st.info("""
 ✅ **Como interpretar:**
-- Cada barra representa a tensão total para cada espessura.
+- Cada barra mostra a tensão total para cada espessura do tubo vertical.
 - A barra **laranja** é a espessura selecionada pelo usuário.
 - Se a barra estiver **abaixo de Sy (linha laranja)**, não ocorre deformação.
 - Se entre **Sy e Sut (linha vermelha)**, pode ocorrer deformação permanente.

@@ -8,10 +8,10 @@ st.title("Veiga FatigueCheck - Análise de resistência em cadeiras soldadas")
 st.markdown("Este app realiza análises de resistência em cadeiras metálicas conforme a **ISO 7173**, com foco realista na falha por tração perpendicular na parede do tubo horizontal (onde realmente ocorre a falha), considerando aço SAE 1008 (Sut=310 MPa, Sy=201 MPa, Se=155 MPa). Utilize capturas de tela para registrar os resultados em PDF quando necessário.")
 
 # Imagem
-tente:
+try:
     diagramas = Image.open("A_pair_of_technical_engineering_diagrams_in_black_.png")
     st.image(diagramas, caption="Diagramas de análise: cadeira inclinada e cadeira em 4 apoios")
-exceto:
+except:
     st.info("Imagem de diagramas não encontrada no diretório. Coloque a imagem no mesmo repositório para visualização.")
 
 # Entradas

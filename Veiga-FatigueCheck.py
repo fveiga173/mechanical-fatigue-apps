@@ -14,7 +14,9 @@ tipo_tubo = st.selectbox("Tipo de tubo", ["Quadrado", "Redondo"])
 largura = st.number_input("Largura (quadrado) ou diâmetro externo (redondo) do tubo horizontal (mm)", value=22.22)
 espessuras_lista = [0.60, 0.75, 0.90, 1.06, 1.20, 1.50, 1.90]
 espessura = st.selectbox("Espessura da parede do tubo vertical (mm):", espessuras_lista, index=2)
-largura_solda = st.number_input("Largura efetiva do cordão de solda (mm):", value=6.0)
+altura_encosto = st.number_input("Altura do centro do encosto (mm)", value=750)
+N__lista = [12.500, 25.000, 50.000, 100.000, 200.000]
+N_desejado = st.selectbox("Número de Ciclos:", espessuras_lista, index=3)
 
 # Constantes materiais e do ensaio
 Sut = 310  # MPa
@@ -24,40 +26,40 @@ a_ciclo = 1e6
 b_ciclo = 5
 
 # Cargas do ensaio ISO 7173
-F_vertical = 325  # N por pé (assento)
-F_horizontal = 280  # N por pé traseiro (encosto)
-altura_encosto = 450  # mm (altura da aplicação da força horizontal)
+F_vertical = 330/2  # N por pé (assento)
+F_horizontal = 950/4  # N por pé traseiro (encosto)
+
 
 # Cálculo do momento gerado pelo encosto
 M = F_horizontal * altura_encosto  # N.mm
 
-# Cálculo da área efetivamente tracionada pela solda na parede do tubo vertical
-# A_resistente = largura do tubo horizontal x largura da solda x espessura do tubo vertical
-A_resistente = largura * largura_solda * espessura  # mm²
+# Área resistente real: largura do tubo horizontal x espessura do tubo vertical
+A_resistente = largura * espessura  # mm²
 
-# Braço de alavanca (aproximado como metade da largura)
+# Braço de alavanca aproximado como metade da largura
 d = largura / 2  # mm
 
-# Tensão gerada pelo momento (tração na parede do tubo vertical)
+# Tensão por momento
 sigma_momento = M / (A_resistente * d)  # MPa
 
 # Tensão de compressão pelo assento
 sigma_compressao = F_vertical / A_resistente  # MPa
 
-# Tensão total = tração (momento) - compressão
+# Tensão total: tração (momento) - compressão
 sigma_total = sigma_momento - sigma_compressao  # MPa
 
 # Verificação de fadiga para 50.000 ciclos
-N_desejado = 50000
+
 sigma_fadiga_admissivel = Se * (a_ciclo / N_desejado) ** (1 / b_ciclo)
 
 # Resultados
-st.subheader("Resultados do Ensaio ISO 7173 (Ajustado)")
-st.write(f"Área tracionada pela solda: {A_resistente:.1f} mm²")
+st.subheader("Resultados do Ensaio ISO 7173 (Corrigido)")
+st.write(f"Área resistente considerada: {A_resistente:.1f} mm²")
 st.write(f"Tensão por momento (tração): {sigma_momento:.2f} MPa")
 st.write(f"Tensão por compressão: {sigma_compressao:.2f} MPa")
 st.write(f"**Tensão total resultante na parede do tubo:** {sigma_total:.2f} MPa")
-st.write(f"Tensão de fadiga admissível para 50.000 ciclos: {sigma_fadiga_admissivel:.2f} MPa")
+st.write(f"**Ciclos desejados** {N_desejado:.0f}")
+st.write(f"Tensão de fadiga admissível para os ciclos: {sigma_fadiga_admissivel:.2f} MPa")
 
 # Análises
 if sigma_total < Sy:
@@ -76,12 +78,12 @@ else:
 # COMPARAÇÃO POR ESPESSURA
 # ============================
 
-st.subheader("📊 Comparação por Espessura no Ensaio ISO 7173 (Ajustado)")
+st.subheader("📊 Comparação por Espessura no Ensaio ISO 7173 (Corrigido)")
 
 sigma_totais = []
 
 for esp in espessuras_lista:
-    A_resistente_esp = largura * largura_solda * esp
+    A_resistente_esp = largura * esp
     sigma_momento_esp = M / (A_resistente_esp * d)
     sigma_compressao_esp = F_vertical / A_resistente_esp
     sigma_total_esp = sigma_momento_esp - sigma_compressao_esp
@@ -114,7 +116,7 @@ for bar, sigma in zip(bars, sigma_totais):
 
 ax.set_xlabel("Espessura da Parede do Tubo (mm)")
 ax.set_ylabel("Tensão Total (MPa)")
-ax.set_title("Tensão Total x Espessura - Ensaio ISO 7173 (Ajustado)")
+ax.set_title("Tensão Total x Espessura - Ensaio ISO 7173 (Corrigido)")
 ax.grid(True, axis='y')
 ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=2)
 

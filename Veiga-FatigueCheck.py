@@ -30,31 +30,23 @@ b_ciclo = 5
 F_vertical = 237.5  # N por pé (assento)
 F_horizontal = 165  # N por pé traseiro (encosto)
 
-# Cálculo do momento gerado pelo encosto com braço correto
+# Cálculo do momento gerado pelo encosto
 braço_momento = altura_encosto - altura_assento  # mm
 M = F_horizontal * braço_momento  # N.mm
 
-# Área resistente real: largura do tubo horizontal x espessura do tubo vertical
+# Área resistente real
 A_resistente = largura * espessura  # mm²
 
-# Braço de alavanca aproximado como metade da largura
+# Braço de alavanca
 d = largura / 2  # mm
 
-# Tensão por momento
+# Tensões
 sigma_momento = M / (A_resistente * d)  # MPa
-
-# Tensão de compressão pelo assento
 sigma_compressao = F_vertical / A_resistente  # MPa
-
-# Tensão total: tração (momento) - compressão
 sigma_total = sigma_momento - sigma_compressao  # MPa
 
-# Verificação de fadiga para ciclos definidos
+# Cálculo da tensão de fadiga para o número de ciclos desejado
 sigma_fadiga_admissivel = Se * (a_ciclo / N_desejado) ** (1 / b_ciclo)
-
-# Corrigir para não ultrapassar o limite de escoamento Sy
-if sigma_fadiga_admissivel > Sy:
-    sigma_fadiga_admissivel = Sy
 
 # Resultados
 st.subheader("Resultados do Ensaio ISO 7173 (Corrigido)")
@@ -73,7 +65,10 @@ elif Sy <= sigma_total < Sut:
 else:
     st.error("❌ **FALHA**: Pode ocorrer ruptura sob carga estática (acima de Sut).")
 
-if sigma_total < sigma_fadiga_admissivel:
+# Verificação de fadiga com alerta se ultrapassar Sut
+if sigma_fadiga_admissivel > Sut:
+    st.error(f"❌ A tensão de fadiga admissível calculada ({sigma_fadiga_admissivel:.2f} MPa) excede o limite de ruptura ({Sut} MPa). O componente ROMPERIA antes de atingir {N_desejado:,} ciclos.")
+elif sigma_total < sigma_fadiga_admissivel:
     st.success(f"✅ Resiste ao ensaio de fadiga de {N_desejado:,} ciclos.")
 else:
     st.error(f"❌ Pode falhar antes de {N_desejado:,} ciclos no ensaio de fadiga.")
@@ -81,7 +76,6 @@ else:
 # ============================
 # COMPARAÇÃO POR ESPESSURA
 # ============================
-
 st.subheader("📊 Comparação por Espessura no Ensaio ISO 7173 (Corrigido)")
 
 sigma_totais = []
@@ -93,7 +87,6 @@ for esp in espessuras_lista:
     sigma_total_esp = sigma_momento_esp - sigma_compressao_esp
     sigma_totais.append(sigma_total_esp)
 
-# Cores para destaque da espessura selecionada
 cores = ['skyblue' if esp != espessura else 'orange' for esp in espessuras_lista]
 
 fig, ax = plt.subplots(figsize=(8, 5))
@@ -103,13 +96,11 @@ bars = ax.bar(
     color=cores
 )
 
-# Linhas de referência
 ax.axhline(Sut, color='red', linestyle='--', label=f'Sut = {Sut} MPa (Ruptura)')
 ax.axhline(Sy, color='orange', linestyle='--', label=f'Sy = {Sy:.0f} MPa (Deformação)')
 ax.axhline(sigma_fadiga_admissivel, color='green', linestyle='--',
            label=f'Se ({N_desejado:,} ciclos) = {sigma_fadiga_admissivel:.0f} MPa (Fadiga)')
 
-# Anotações em cada barra
 for bar, sigma in zip(bars, sigma_totais):
     height = bar.get_height()
     ax.annotate(f"{sigma:.0f}",

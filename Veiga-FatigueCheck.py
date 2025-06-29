@@ -17,7 +17,8 @@ except:
 # Entradas
 tipo_tubo = st.selectbox("Tipo de tubo", ["Quadrado", "Redondo"])
 largura = st.number_input("Largura (quadrado) ou diâmetro externo (redondo) do tubo (mm)", value=20.0)
-espessura = st.number_input("Espessura do tubo (mm)", value=0.9)
+espessuras_lista = [0.60, 0.75, 0.90, 1.06, 1.20, 1.50, 1.90]  # mm
+espessura = st.selectbox("Selecione a espessura do tubo para visualização detalhada:", espessuras_lista, index=2)
 largura_cordao = st.number_input("Largura do cordão de solda (mm)", value=6.0)
 
 # Constantes
@@ -71,3 +72,37 @@ if sigma_axial < Sy:
     st.success("✅ A solda RESISTE ao carregamento axial (sem deformação permanente).")
 else:
     st.error("❌ A solda NÃO RESISTE ao carregamento axial, podendo ocorrer **deformação permanente ou ruptura em ciclos.**")
+
+# Seção final: Análise Comparativa por Espessura
+st.subheader("Análise Comparativa por Espessura")
+
+espessuras = [0.60, 0.75, 0.90, 1.06, 1.20, 1.50, 1.90]  # mm
+sigma_momentos = []
+sigma_axials = []
+
+largura_tubo = 20  # mm
+largura_cordao = 6  # mm
+M = 114710  # N.mm
+F_axial = 325  # N
+
+for esp in espessuras:
+    I = (largura_tubo * largura_tubo ** 3) / 12 - ((largura_tubo - 2 * esp) * (largura_tubo - 2 * esp) ** 3) / 12
+    c = largura_tubo / 2
+    sigma_m = M * c / I
+    sigma_momentos.append(sigma_m)
+    A_solda = 2 * largura_cordao * esp
+    sigma_a = F_axial / A_solda
+    sigma_axials.append(sigma_a)
+
+plt.figure(figsize=(8,5))
+plt.plot(espessuras, sigma_momentos, marker='o', label='σ Momento (MPa) - Cadeira Inclinada')
+plt.plot(espessuras, sigma_axials, marker='s', label='σ Axial (MPa) - Cadeira 4 Apoios')
+plt.axhline(y=155, color='green', linestyle='--', label='Se = 155 MPa (Limite de Fadiga)')
+plt.axhline(y=201, color='orange', linestyle='--', label='Sy = 201 MPa (Limite de Escoamento)')
+plt.axhline(y=310, color='red', linestyle='--', label='Sut = 310 MPa (Limite de Ruptura)')
+plt.xlabel('Espessura do Tubo (mm)')
+plt.ylabel('Tensão (MPa)')
+plt.title('Comparação de Tensões em Função da Espessura')
+plt.grid(True)
+plt.legend()
+st.pyplot(plt)

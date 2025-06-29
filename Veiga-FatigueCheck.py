@@ -30,7 +30,7 @@ b_ciclo = 5
 F_vertical = 237.5  # N por pé (assento)
 F_horizontal = 165  # N por pé traseiro (encosto)
 
-
+# Cálculo do momento gerado pelo encosto com braço correto
 braço_momento = altura_encosto - altura_assento  # mm
 M = F_horizontal * braço_momento  # N.mm
 
@@ -52,9 +52,9 @@ sigma_total = sigma_momento - sigma_compressao  # MPa
 # Verificação de fadiga para ciclos definidos
 sigma_fadiga_admissivel = Se * (a_ciclo / N_desejado) ** (1 / b_ciclo)
 
-# Corrigir para não ultrapassar o limite de ruptura Sut
-if sigma_fadiga_admissivel > Sut:
-    sigma_fadiga_admissivel = Sut
+# Corrigir para não ultrapassar o limite de escoamento Sy
+if sigma_fadiga_admissivel > Sy:
+    sigma_fadiga_admissivel = Sy
 
 # Resultados
 st.subheader("Resultados do Ensaio ISO 7173 (Corrigido)")
@@ -73,9 +73,7 @@ elif Sy <= sigma_total < Sut:
 else:
     st.error("❌ **FALHA**: Pode ocorrer ruptura sob carga estática (acima de Sut).")
 
-if sigma_fadiga_admissivel >= Sut:
-    st.error("❌ A tensão admissível de fadiga excede o limite de ruptura do material. Ajuste o número de ciclos ou parâmetros de projeto.")
-elif sigma_total < sigma_fadiga_admissivel:
+if sigma_total < sigma_fadiga_admissivel:
     st.success(f"✅ Resiste ao ensaio de fadiga de {N_desejado:,} ciclos.")
 else:
     st.error(f"❌ Pode falhar antes de {N_desejado:,} ciclos no ensaio de fadiga.")

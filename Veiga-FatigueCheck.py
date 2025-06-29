@@ -73,19 +73,14 @@ if sigma_axial < Sy:
 else:
     st.error("❌ A solda NÃO RESISTE ao carregamento axial, podendo ocorrer **deformação permanente ou ruptura em ciclos.**")
 
-# Seção final: Análise Comparativa por Espessura
+# Seção final: Análise Comparativa por Espessura (ajustada)
+
 st.subheader("Análise Comparativa por Espessura")
 
-espessuras = [0.60, 0.75, 0.90, 1.06, 1.20, 1.50, 1.90]  # mm
 sigma_momentos = []
 sigma_axials = []
 
-largura_tubo = 20  # mm
-largura_cordao = 6  # mm
-M = 114710  # N.mm
-F_axial = 325  # N
-
-for esp in espessuras:
+for esp in espessuras_lista:
     I = (largura_tubo * largura_tubo ** 3) / 12 - ((largura_tubo - 2 * esp) * (largura_tubo - 2 * esp) ** 3) / 12
     c = largura_tubo / 2
     sigma_m = M * c / I
@@ -94,15 +89,32 @@ for esp in espessuras:
     sigma_a = F_axial / A_solda
     sigma_axials.append(sigma_a)
 
-plt.figure(figsize=(8,5))
-plt.plot(espessuras, sigma_momentos, marker='o', label='σ Momento (MPa) - Cadeira Inclinada')
-plt.plot(espessuras, sigma_axials, marker='s', label='σ Axial (MPa) - Cadeira 4 Apoios')
-plt.axhline(y=155, color='green', linestyle='--', label='Se = 155 MPa (Limite de Fadiga)')
-plt.axhline(y=201, color='orange', linestyle='--', label='Sy = 201 MPa (Limite de Escoamento)')
-plt.axhline(y=310, color='red', linestyle='--', label='Sut = 310 MPa (Limite de Ruptura)')
-plt.xlabel('Espessura do Tubo (mm)')
-plt.ylabel('Tensão (MPa)')
-plt.title('Comparação de Tensões em Função da Espessura')
-plt.grid(True)
-plt.legend()
-st.pyplot(plt)
+st.write(f"Para a espessura selecionada de {espessura:.2f} mm:")
+I_sel = (largura_tubo * largura_tubo ** 3) / 12 - ((largura_tubo - 2 * espessura) * (largura_tubo - 2 * espessura) ** 3) / 12
+c_sel = largura_tubo / 2
+sigma_m_sel = M * c_sel / I_sel
+A_solda_sel = 2 * largura_cordao * espessura
+sigma_a_sel = F_axial / A_solda_sel
+st.write(f"Tensão por momento (cadeira inclinada): {sigma_m_sel:.2f} MPa")
+st.write(f"Tensão axial (cadeira com 4 apoios): {sigma_a_sel:.2f} MPa")
+
+fig, ax = plt.subplots(figsize=(8, 5))
+ax.plot(espessuras_lista, sigma_momentos, marker='o', label='σ Momento (MPa) - Cadeira Inclinada')
+ax.plot(espessuras_lista, sigma_axials, marker='s', label='σ Axial (MPa) - Cadeira 4 Apoios')
+ax.axhline(y=155, color='green', linestyle='--', label='Se = 155 MPa (Limite de Fadiga)')
+ax.axhline(y=201, color='orange', linestyle='--', label='Sy = 201 MPa (Limite de Escoamento)')
+ax.axhline(y=310, color='red', linestyle='--', label='Sut = 310 MPa (Limite de Ruptura)')
+
+# Ajuste do eixo x para mostrar exatamente os valores
+ax.set_xticks(espessuras_lista)
+ax.set_xticklabels([f'{esp:.2f}' for esp in espessuras_lista])
+
+ax.set_xlabel('Espessura do Tubo (mm)')
+ax.set_ylabel('Tensão (MPa)')
+ax.set_title('Comparação de Tensões em Função da Espessura')
+ax.grid(True)
+
+# Legenda fora do gráfico, abaixo
+ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=2)
+
+st.pyplot(fig)

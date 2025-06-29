@@ -72,7 +72,7 @@ else:
 
 # Seção final: Análise Comparativa por Espessura (ajustada para tubo quadrado e redondo)
 
-t.subheader("Análise Comparativa por Espessura (Parede do Tubo)")
+st.subheader("Análise Comparativa por Espessura (Parede do Tubo)")
 
 sigma_momentos = []
 sigma_axials = []

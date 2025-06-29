@@ -4,126 +4,71 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 # Título e descrição
-st.title("Veiga FatigueCheck - Análise de resistência em cadeiras soldadas")
-st.markdown("Este app realiza análises de resistência em cadeiras metálicas conforme a **ISO 7173**, com foco realista na falha por tração perpendicular na parede do tubo horizontal (onde realmente ocorre a falha), considerando aço SAE 1008 (Sut=310 MPa, Sy=201 MPa, Se=155 MPa). Utilize capturas de tela para registrar os resultados em PDF quando necessário.")
-
-# Imagem
-try:
-    diagramas = Image.open("A_pair_of_technical_engineering_diagrams_in_black_.png")
-    st.image(diagramas, caption="Diagramas de análise: cadeira inclinada e cadeira em 4 apoios")
-except:
-    st.info("Imagem de diagramas não encontrada no diretório. Coloque a imagem no mesmo repositório para visualização.")
+st.title("Veiga FatigueCheck - Ensaio ISO 7173 Simplificado")
+st.markdown("Este app prevê se a cadeira resiste ao ensaio ISO 7173, calculando se **deforma (Sy), se rompe (Sut) e se resiste a 50.000 ciclos (Se)** sob as cargas padronizadas:")
+st.markdown("- **1300 N no assento (325 N por pé).**\n- **560 N no encosto (280 N por pé traseiro).**")
 
 # Entradas
 tipo_tubo = st.selectbox("Tipo de tubo", ["Quadrado", "Redondo"])
 largura = st.number_input("Largura (quadrado) ou diâmetro externo (redondo) do tubo (mm)", value=20.0)
-espessuras_lista = [0.60, 0.75, 0.90, 1.06, 1.20, 1.50, 1.90]  # mm
-espessura = st.selectbox("Selecione a espessura do tubo para visualização detalhada:", espessuras_lista, index=2)
-largura_cordao = st.number_input("Largura do cordão de solda (mm)", value=6.0)
+espessuras_lista = [0.60, 0.75, 0.90, 1.06, 1.20, 1.50, 1.90]
+espessura = st.selectbox("Selecione a espessura do tubo para análise:", espessuras_lista, index=2)
 
 # Constantes
-Sut = 310
-Sy = 0.65 * Sut  # ≈ 201 MPa
-Se = 0.5 * Sut    # 155 MPa
-M = 114710  # Momento aplicado na cadeira inclinada
-F_axial = 475  # N (carga axial por pé traseiro)
+Sut = 310  # MPa
+Sy = 0.65 * Sut  # 201 MPa
+Se = 0.5 * Sut   # 155 MPa
+n_ciclos_teste = 50000
 
-# Cálculos focados na parede do tubo horizontal, sem foco na falha do cordão de solda
+# Cálculo da carga axial total corrigida
+F_vertical = 325  # N por pé (assento)
+F_horizontal = 280  # N por pé traseiro (encosto)
+F_axial_total = F_vertical + F_horizontal  # N
+
+# Área resistente
 if tipo_tubo == "Quadrado":
-    I = (largura * largura**3) / 12 - ((largura - 2 * espessura) * (largura - 2 * espessura)**3) / 12
-    c = largura / 2
-else:  # Redondo
-    d_interno = largura - 2 * espessura
-    I = (np.pi / 64) * (largura**4 - d_interno**4)
-    c = largura / 2
+    A_resistente = 2 * largura * espessura  # mm²
+else:
+    A_resistente = np.pi * largura * espessura  # mm²
 
-# Caso 1: cadeira inclinada
-sigma_momento = M * c / I  # tensão na parede do tubo horizontal
+# Conversão para m² para cálculo de tensão (1 mm² = 1e-6 m²)
+A_resistente_m2 = A_resistente * 1e-6
 
-# Caso 2: carga axial (mantém para fadiga)
-A_solda = 2 * largura_cordao * espessura if tipo_tubo == "Quadrado" else np.pi * largura*1.3 * espessura
-sigma_axial = F_axial / A_solda
-N_ciclos = 1e6 * (sigma_axial / Sut) ** (-5)
+# Cálculo da tensão axial em MPa
+sigma_axial = F_axial_total / A_resistente_m2 / 1e6  # MPa
+
+# Estimativa de vida em ciclos por Lei de Basquin simplificada
+a_basquin = 1e6  # 1.000.000 ciclos a Se
+b_basquin = 5
+n_estimado = a_basquin * (sigma_axial / Sut) ** (-b_basquin)
 
 # Resultados
-st.subheader("Resultados")
-
-st.markdown("**Caso 1: Cadeira Inclinada (Análise da parede do tubo)**")
-st.write(f"Tensão por momento: {sigma_momento:.2f} MPa")
-st.write(f"Limite de escoamento (Sy): {Sy:.2f} MPa")
-st.write(f"Limite de ruptura (Sut): {Sut:.2f} MPa")
-
-if sigma_momento < Sy:
-    st.success("✅ A parede do tubo RESISTE ao momento aplicado (sem deformação permanente).")
-elif Sy <= sigma_momento < Sut:
-    st.warning("⚠️ A parede do tubo pode sofrer **deformação plástica**, mas não ruptura imediata.")
-else:
-    st.error("❌ A parede do tubo pode **romper sob o momento aplicado**.")
-
-st.markdown("**Caso 2: Cadeira com 4 Apoios (Análise de Fadiga)**")
-st.write(f"Tensão axial na solda: {sigma_axial:.2f} MPa")
-st.write(f"Vida estimada: {N_ciclos:,.0f} ciclos")
+st.subheader("Resultados do Ensaio ISO 7173")
+st.write(f"Carga axial total aplicada por pé traseiro: {F_axial_total} N")
+st.write(f"Área resistente calculada: {A_resistente:.2f} mm²")
+st.write(f"Tensão axial calculada: {sigma_axial:.2f} MPa")
+st.write(f"Limite de escoamento (Sy): {Sy:.0f} MPa")
+st.write(f"Limite de ruptura (Sut): {Sut:.0f} MPa")
+st.write(f"Limite de fadiga (Se): {Se:.0f} MPa")
 
 if sigma_axial < Sy:
-    st.success("✅ A solda RESISTE ao carregamento axial (sem deformação permanente).")
+    st.success("✅ A cadeira **NÃO deforma permanentemente** no ensaio.")
+elif Sy <= sigma_axial < Sut:
+    st.warning("⚠️ A cadeira pode sofrer **deformação plástica**, mas não ruptura imediata.")
 else:
-    st.error("❌ A solda pode sofrer **deformação ou falha por fadiga** sob o carregamento axial.")
+    st.error("❌ A cadeira pode **romper** sob as cargas do ensaio.")
 
-
-# Seção final: Análise Comparativa por Espessura (ajustada para tubo quadrado e redondo)
-
-st.subheader("Análise Comparativa por Espessura (Parede do Tubo)")
-
-sigma_momentos = []
-sigma_axials = []
-
-for esp in espessuras_lista:
-    if tipo_tubo == "Quadrado":
-        I = (largura * largura**3) / 12 - ((largura - 2 * esp) * (largura - 2 * esp)**3) / 12
-        c = largura / 2
-        A_parede = 2 * largura * esp
-    else:
-        d_interno = largura - 2 * esp
-        I = (np.pi / 64) * (largura**4 - d_interno**4)
-        c = largura / 2
-        A_parede = np.pi * largura * esp
-
-    sigma_m = M * c / I
-    sigma_a = F_axial / A_parede
-
-    sigma_momentos.append(sigma_m)
-    sigma_axials.append(sigma_a)
-
-st.write(f"Para a espessura selecionada de {espessura:.2f} mm:")
-if tipo_tubo == "Quadrado":
-    I_sel = (largura * largura**3) / 12 - ((largura - 2 * espessura) * (largura - 2 * espessura)**3) / 12
-    c_sel = largura / 2
-    A_sel = 2 * largura * espessura
+# Verificação de fadiga
+if n_estimado > n_ciclos_teste:
+    st.success(f"✅ Resiste ao ensaio de fadiga de {n_ciclos_teste:,} ciclos.")
 else:
-    d_interno_sel = largura - 2 * espessura
-    I_sel = (np.pi / 64) * (largura**4 - d_interno_sel**4)
-    c_sel = largura / 2
-    A_sel = np.pi * largura * espessura
+    st.error(f"❌ NÃO resiste ao ensaio de fadiga de {n_ciclos_teste:,} ciclos.")
 
-sigma_m_sel = M * c_sel / I_sel
-sigma_a_sel = F_axial / A_sel
-
-st.write(f"Tensão por momento (cadeira inclinada): {sigma_m_sel:.2f} MPa")
-st.write(f"Tensão axial (cadeira com 4 apoios): {sigma_a_sel:.2f} MPa")
-
-fig, ax = plt.subplots(figsize=(8, 5))
-ax.plot(espessuras_lista, sigma_momentos, marker='o', label='σ Momento (MPa) - Cadeira Inclinada')
-ax.plot(espessuras_lista, sigma_axials, marker='s', label='σ Axial (MPa) - Cadeira 4 Apoios')
-ax.axhline(y=155, color='green', linestyle='--', label='Se = 155 MPa (Limite de Fadiga)')
-ax.axhline(y=201, color='orange', linestyle='--', label='Sy = 201 MPa (Limite de Escoamento)')
-ax.axhline(y=310, color='red', linestyle='--', label='Sut = 310 MPa (Limite de Ruptura)')
-
-ax.set_xticks(espessuras_lista)
-ax.set_xticklabels([f'{esp:.2f}' for esp in espessuras_lista])
-ax.set_xlabel('Espessura do Tubo (mm)')
+# Gráfico comparativo
+fig, ax = plt.subplots(figsize=(6, 4))
+ax.bar(['σ Calculada', 'Se', 'Sy', 'Sut'], [sigma_axial, Se, Sy, Sut], color=['blue', 'green', 'orange', 'red'])
 ax.set_ylabel('Tensão (MPa)')
-ax.set_title('Comparação de Tensões em Função da Espessura (Parede do Tubo)')
-ax.grid(True)
-ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=2)
+ax.set_title('Comparação de Tensões no Ensaio ISO 7173')
+ax.grid(True, axis='y')
 
 st.pyplot(fig)

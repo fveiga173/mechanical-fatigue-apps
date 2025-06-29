@@ -73,28 +73,44 @@ if sigma_axial < Sy:
 else:
     st.error("❌ A solda NÃO RESISTE ao carregamento axial, podendo ocorrer **deformação permanente ou ruptura em ciclos.**")
 
-# Seção final: Análise Comparativa por Espessura (ajustada)
-
 st.subheader("Análise Comparativa por Espessura")
+
+
+# Seção final: Análise Comparativa por Espessura (ajustada para tubo quadrado e redondo)
+
 
 sigma_momentos = []
 sigma_axials = []
 
 for esp in espessuras_lista:
-    I = (largura_tubo * largura_tubo ** 3) / 12 - ((largura_tubo - 2 * esp) * (largura_tubo - 2 * esp) ** 3) / 12
-    c = largura_tubo / 2
+    if tipo_tubo == "Quadrado":
+        I = (largura * largura ** 3) / 12 - ((largura - 2 * esp) * (largura - 2 * esp) ** 3) / 12
+        c = largura / 2
+        A_solda = 2 * largura_cordao * esp
+    else:  # Redondo
+        d_interno = largura - 2 * esp
+        I = (np.pi / 64) * (largura ** 4 - d_interno ** 4)
+        c = largura / 2
+        A_solda = np.pi * largura * esp
     sigma_m = M * c / I
     sigma_momentos.append(sigma_m)
-    A_solda = 2 * largura_cordao * esp
     sigma_a = F_axial / A_solda
     sigma_axials.append(sigma_a)
 
 st.write(f"Para a espessura selecionada de {espessura:.2f} mm:")
-I_sel = (largura_tubo * largura_tubo ** 3) / 12 - ((largura_tubo - 2 * espessura) * (largura_tubo - 2 * espessura) ** 3) / 12
-c_sel = largura_tubo / 2
+if tipo_tubo == "Quadrado":
+    I_sel = (largura * largura ** 3) / 12 - ((largura - 2 * espessura) * (largura - 2 * espessura) ** 3) / 12
+    c_sel = largura / 2
+    A_solda_sel = 2 * largura_cordao * espessura
+else:
+    d_interno_sel = largura - 2 * espessura
+    I_sel = (np.pi / 64) * (largura ** 4 - d_interno_sel ** 4)
+    c_sel = largura / 2
+    A_solda_sel = np.pi * largura * espessura
+
 sigma_m_sel = M * c_sel / I_sel
-A_solda_sel = 2 * largura_cordao * espessura
 sigma_a_sel = F_axial / A_solda_sel
+
 st.write(f"Tensão por momento (cadeira inclinada): {sigma_m_sel:.2f} MPa")
 st.write(f"Tensão axial (cadeira com 4 apoios): {sigma_a_sel:.2f} MPa")
 
@@ -105,16 +121,12 @@ ax.axhline(y=155, color='green', linestyle='--', label='Se = 155 MPa (Limite de 
 ax.axhline(y=201, color='orange', linestyle='--', label='Sy = 201 MPa (Limite de Escoamento)')
 ax.axhline(y=310, color='red', linestyle='--', label='Sut = 310 MPa (Limite de Ruptura)')
 
-# Ajuste do eixo x para mostrar exatamente os valores
 ax.set_xticks(espessuras_lista)
 ax.set_xticklabels([f'{esp:.2f}' for esp in espessuras_lista])
-
 ax.set_xlabel('Espessura do Tubo (mm)')
 ax.set_ylabel('Tensão (MPa)')
 ax.set_title('Comparação de Tensões em Função da Espessura')
 ax.grid(True)
-
-# Legenda fora do gráfico, abaixo
 ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=2)
 
 st.pyplot(fig)

@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Título e descrição
-st.title("Veiga FatigueCheck - Ensaio ISO 7173 (Ajustado)")
+st.title("Veiga FatigueCheck - Ensaio ISO 7173")
 st.markdown("""
 Este app verifica **deformação, ruptura e resistência a ciclos definidos** no ensaio de cadeiras metálicas conforme a **ISO 7173**, 
 calculando a tensão real de tração na parede do tubo traseiro causada pela solda e a compressão do assento.
@@ -49,7 +49,7 @@ sigma_total = sigma_momento - sigma_compressao  # MPa
 sigma_fadiga_admissivel = Se * (a_ciclo / N_desejado) ** (1 / b_ciclo)
 
 # Resultados
-st.subheader("Resultados do Ensaio ISO 7173 (Corrigido)")
+st.subheader("Resultados do Ensaio ISO 7173")
 st.write(f"Área resistente considerada: {A_resistente:.1f} mm²")
 st.write(f"Tensão por momento (tração): {sigma_momento:.2f} MPa")
 st.write(f"Tensão por compressão: {sigma_compressao:.2f} MPa")
@@ -80,7 +80,7 @@ else:
 # ============================
 # COMPARAÇÃO POR ESPESSURA
 # ============================
-st.subheader("📊 Comparação por Espessura no Ensaio ISO 7173 (Corrigido)")
+st.subheader("📊 Comparação por Espessura no Ensaio ISO 7173")
 
 sigma_totais = []
 

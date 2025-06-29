@@ -41,7 +41,7 @@ else:  # Redondo
 sigma_momento = M * c / I  # tensão na parede do tubo horizontal
 
 # Caso 2: carga axial (mantém para fadiga)
-A_solda = 2 * largura_cordao * espessura if tipo_tubo == "Quadrado" else np.pi * largura * espessura
+A_solda = 2 * largura_cordao * espessura if tipo_tubo == "Quadrado" else np.pi * largura*1.3 * espessura
 sigma_axial = F_axial / A_solda
 N_ciclos = 1e6 * (sigma_axial / Sut) ** (-5)
 

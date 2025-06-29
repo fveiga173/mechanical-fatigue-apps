@@ -26,8 +26,8 @@ a_ciclo = 1e6
 b_ciclo = 5
 
 # Cargas do ensaio ISO 7173
-F_vertical = 165  # N por pé (assento)
-F_horizontal = 237.5  # N por pé traseiro (encosto)
+F_vertical = 237.5  # N por pé (assento)
+F_horizontal = 165  # N por pé traseiro (encosto)
 
 
 # Cálculo do momento gerado pelo encosto

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 # Título e descrição
 st.title("Veiga FatigueCheck - Ensaio ISO 7173 (Ajustado)")
 st.markdown("""
-Este app verifica **deformação, ruptura e resistência a 50.000 ciclos** no ensaio de cadeiras metálicas conforme a **ISO 7173**, 
+Este app verifica **deformação, ruptura e resistência a ciclos definidos** no ensaio de cadeiras metálicas conforme a **ISO 7173**, 
 calculando a tensão real de tração na parede do tubo traseiro causada pela solda e a compressão do assento.
 """)
 
@@ -29,7 +29,6 @@ b_ciclo = 5
 F_vertical = 237.5  # N por pé (assento)
 F_horizontal = 165  # N por pé traseiro (encosto)
 
-
 # Cálculo do momento gerado pelo encosto
 M = F_horizontal * altura_encosto  # N.mm
 
@@ -48,9 +47,12 @@ sigma_compressao = F_vertical / A_resistente  # MPa
 # Tensão total: tração (momento) - compressão
 sigma_total = sigma_momento - sigma_compressao  # MPa
 
-# Verificação de fadiga para 50.000 ciclos
-
+# Verificação de fadiga para ciclos definidos
 sigma_fadiga_admissivel = Se * (a_ciclo / N_desejado) ** (1 / b_ciclo)
+
+# Corrigir para não ultrapassar o limite de ruptura Sut
+if sigma_fadiga_admissivel > Sut:
+    sigma_fadiga_admissivel = Sut
 
 # Resultados
 st.subheader("Resultados do Ensaio ISO 7173 (Corrigido)")
@@ -58,7 +60,7 @@ st.write(f"Área resistente considerada: {A_resistente:.1f} mm²")
 st.write(f"Tensão por momento (tração): {sigma_momento:.2f} MPa")
 st.write(f"Tensão por compressão: {sigma_compressao:.2f} MPa")
 st.write(f"**Tensão total resultante na parede do tubo:** {sigma_total:.2f} MPa")
-st.write(f"**Ciclos desejados** {N_desejado:.0f}")
+st.write(f"**Ciclos desejados:** {N_desejado:,}")
 st.write(f"Tensão de fadiga admissível para os ciclos: {sigma_fadiga_admissivel:.2f} MPa")
 
 # Análises
@@ -69,10 +71,12 @@ elif Sy <= sigma_total < Sut:
 else:
     st.error("❌ **FALHA**: Pode ocorrer ruptura sob carga estática (acima de Sut).")
 
-if sigma_total < sigma_fadiga_admissivel:
-    st.success("✅ Resiste ao ensaio de fadiga de 50.000 ciclos.")
+if sigma_fadiga_admissivel >= Sut:
+    st.error("❌ A tensão admissível de fadiga excede o limite de ruptura do material. Ajuste o número de ciclos ou parâmetros de projeto.")
+elif sigma_total < sigma_fadiga_admissivel:
+    st.success(f"✅ Resiste ao ensaio de fadiga de {N_desejado:,} ciclos.")
 else:
-    st.error("❌ Pode falhar antes de 50.000 ciclos no ensaio de fadiga.")
+    st.error(f"❌ Pode falhar antes de {N_desejado:,} ciclos no ensaio de fadiga.")
 
 # ============================
 # COMPARAÇÃO POR ESPESSURA
@@ -103,7 +107,7 @@ bars = ax.bar(
 ax.axhline(Sut, color='red', linestyle='--', label=f'Sut = {Sut} MPa (Ruptura)')
 ax.axhline(Sy, color='orange', linestyle='--', label=f'Sy = {Sy:.0f} MPa (Deformação)')
 ax.axhline(sigma_fadiga_admissivel, color='green', linestyle='--',
-           label=f'Se (50k ciclos) = {sigma_fadiga_admissivel:.0f} MPa (Fadiga)')
+           label=f'Se ({N_desejado:,} ciclos) = {sigma_fadiga_admissivel:.0f} MPa (Fadiga)')
 
 # Anotações em cada barra
 for bar, sigma in zip(bars, sigma_totais):
@@ -123,12 +127,12 @@ ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=2)
 st.pyplot(fig)
 
 # Comentário interpretativo
-st.info("""
+st.info(f"""
 ✅ **Como interpretar:**
 - Cada barra mostra a tensão total para cada espessura do tubo vertical.
 - A barra **laranja** é a espessura selecionada pelo usuário.
 - Se a barra estiver **abaixo de Sy (linha laranja)**, não ocorre deformação.
 - Se entre **Sy e Sut (linha vermelha)**, pode ocorrer deformação permanente.
 - Se **acima de Sut**, pode ocorrer ruptura sob carga estática.
-- Se abaixo da linha verde (Se 50k ciclos), resiste ao ensaio de fadiga.
+- Se abaixo da linha verde (Se para {N_desejado:,} ciclos), resiste ao ensaio de fadiga.
 """)

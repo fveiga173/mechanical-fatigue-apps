@@ -16,7 +16,7 @@ espessuras_lista = [0.60, 0.75, 0.90, 1.06, 1.20, 1.50, 1.90]
 espessura = st.selectbox("Espessura da parede do tubo vertical (mm):", espessuras_lista, index=2)
 altura_encosto = st.number_input("Altura do centro do encosto (mm)", value=750)
 N_lista = [12500, 25000, 50000, 100000, 200000]
-N_desejado = st.selectbox("Número de Ciclos:", N_lista, index=3)
+N_desejado = st.selectbox("Número de Ciclos:", N_lista, index=2)
 
 # Constantes materiais e do ensaio
 Sut = 310  # MPa

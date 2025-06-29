@@ -75,15 +75,69 @@ if sigma_total < sigma_fadiga_admissivel:
 else:
     st.error("❌ Pode falhar antes de 50.000 ciclos no ensaio de fadiga.")
 
-# Gráfico para visualização rápida
-fig, ax = plt.subplots(figsize=(6, 4))
-ax.axhline(Sut, color='red', linestyle='--', label=f'Sut = {Sut} MPa')
-ax.axhline(Sy, color='orange', linestyle='--', label=f'Sy = {Sy:.0f} MPa')
-ax.axhline(sigma_fadiga_admissivel, color='green', linestyle='--', label=f'Se(50k ciclos) = {sigma_fadiga_admissivel:.0f} MPa')
-ax.bar(['Tensão Total'], [sigma_total], color='blue', label=f'Tensão Calculada = {sigma_total:.1f} MPa')
-ax.set_ylabel('Tensão (MPa)')
-ax.set_title('Comparação de Tensões no Ensaio ISO 7173')
+# ============================
+# COMPARAÇÃO POR ESPESSURA
+# ============================
+
+st.subheader("📊 Comparação por Espessura no Ensaio ISO 7173")
+
+espessuras_lista = [0.60, 0.75, 0.90, 1.06, 1.20, 1.50, 1.90]  # mm
+sigma_totais = []
+
+for esp in espessuras_lista:
+    if tipo_tubo == "Quadrado":
+        perimetro_solda = 2 * largura  # apenas superior e inferior
+    else:
+        perimetro_solda = np.pi * largura  # solda total
+
+    A_resistente = perimetro_solda * esp  # mm²
+    sigma_momento = M / (A_resistente * (largura / 2))  # MPa
+    sigma_compressao = F_vertical / A_resistente  # MPa
+    sigma_total = sigma_momento - sigma_compressao  # MPa
+    sigma_totais.append(sigma_total)
+
+# Definir cores destacando a espessura selecionada
+cores = ['skyblue' if esp != espessura else 'orange' for esp in espessuras_lista]
+
+# Gráfico de barras
+fig, ax = plt.subplots(figsize=(8, 5))
+bars = ax.bar(
+    [str(e) for e in espessuras_lista],
+    sigma_totais,
+    color=cores,
+    label='Tensão Total (MPa)'
+)
+
+# Linhas de referência
+ax.axhline(Sut, color='red', linestyle='--', label=f'Sut = {Sut} MPa (Ruptura)')
+ax.axhline(Sy, color='orange', linestyle='--', label=f'Sy = {Sy:.0f} MPa (Deformação)')
+ax.axhline(sigma_fadiga_admissivel, color='green', linestyle='--',
+           label=f'Se (50k ciclos) = {sigma_fadiga_admissivel:.0f} MPa (Fadiga)')
+
+# Anotação em cada barra
+for bar, sigma in zip(bars, sigma_totais):
+    height = bar.get_height()
+    ax.annotate(f"{sigma:.0f}",
+                xy=(bar.get_x() + bar.get_width() / 2, height),
+                xytext=(0, 5),
+                textcoords="offset points",
+                ha='center', va='bottom')
+
+ax.set_xlabel("Espessura da Parede do Tubo (mm)")
+ax.set_ylabel("Tensão Total (MPa)")
+ax.set_title("Tensão Total x Espessura - Ensaio ISO 7173")
+ax.grid(True, axis='y')
 ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=2)
-ax.grid(True)
 
 st.pyplot(fig)
+
+# Comentário interpretativo
+st.info("""
+✅ **Como interpretar:**
+- Cada barra representa a tensão total para cada espessura.
+- A barra **laranja** é a espessura selecionada pelo usuário.
+- Se a barra estiver **abaixo de Sy (linha laranja)**, não ocorre deformação.
+- Se entre **Sy e Sut (linha vermelha)**, pode ocorrer deformação permanente.
+- Se **acima de Sut**, pode ocorrer ruptura sob carga estática.
+- Se abaixo da linha verde (Se 50k ciclos), resiste ao ensaio de fadiga.
+""")

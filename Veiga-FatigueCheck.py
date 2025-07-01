@@ -118,7 +118,7 @@ for esp in espessuras_lista:
         # Para tubo redondo, área da parede: A = π * (D_ext^2 - D_int^2) / 4
         D_ext = largura  # onde 'largura' aqui é o diâmetro externo
         D_int = D_ext - 2 * espessura
-        A_resistente = (np.pi * (D_ext**2 - D_int**2)) / 4)/2  # mm²
+        A_resistente = ((np.pi * (D_ext**2 - D_int**2)) / 4)/2  # mm²
 
 
 cores = ['skyblue' if esp != espessura else 'orange' for esp in espessuras_lista]

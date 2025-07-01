@@ -50,9 +50,9 @@ F_vertical_liquida = F_vertical_per_foot - F_horizontal  # N
 
 # Área resistente e área de cisalhamento
 if tipo_tubo == "Redondo":
-    A_resistente = np.pi * (largura / 2)**2  # área do tubo redondo
+    A_resistente = (np.pi * (largura / 2)**2)/2  # área da secção do tubo redondo
 else:
-    A_resistente = largura * espessura  # área do tubo quadrado
+    A_resistente = largura * espessura  # área da secção do tubo quadrado
 
 # Tensão por momento:
 d = largura / 2  # mm

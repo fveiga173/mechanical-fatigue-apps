@@ -48,7 +48,7 @@ M_total = M_fixo_horizontal_Nmm + M_encosto_Nmm  # Nmm
 F_vertical_liquida = F_vertical_per_foot - F_horizontal  # N
 
 # Área resistente:
-if tipo_tubo == 'quadrado':
+if tipo_tubo = 'quadrado':
     A_resistente = largura * espessura  # mm²
 else:
     # Para tubo redondo, área da parede: A = π * (D_ext^2 - D_int^2) / 4

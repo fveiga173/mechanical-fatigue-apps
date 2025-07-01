@@ -19,8 +19,8 @@ N_desejado = st.selectbox("Número de Ciclos:", N_lista, index=2)
 
 # Constantes materiais e do ensaio
 Sut = 310  # MPa
-tau_max = 0.6 * Sut  # Limite de cisalhamento (60% de Sut)
-
+Sy = 0.65 * Sut  # 201 MPa
+Se = 0.5 * Sut  # 155 MPa
 a_ciclo = 1e6
 b_ciclo = 5
 
@@ -47,14 +47,23 @@ M_total = M_fixo_horizontal_Nmm + M_encosto_Nmm  # Nmm
 # Força vertical líquida:
 F_vertical_liquida = F_vertical_per_foot - F_horizontal  # N
 
-# Área resistente e área de cisalhamento
-if tipo_tubo == "Redondo":
-    A_resistente = (np.pi * (largura / 2)**2)/2  # área do tubo redondo
-else:
-    A_resistente = largura * espessura  # área do tubo quadrado
+# Área resistente:
+A_resistente = largura * espessura  # mm²
 
-# Tensão de cisalhamento
-tau = F_vertical_liquida / A_resistente  # MPa (tensão de cisalhamento)
+# Braço de alavanca:
+d = largura / 2  # mm
+
+# Tensão por momento:
+sigma_momento = M_total / (A_resistente * d)  # MPa
+
+# Tensão por compressão:
+sigma_compressao = F_vertical_liquida / A_resistente  # MPa
+
+# Tensão total:
+sigma_total = sigma_momento - sigma_compressao  # MPa
+
+# Cálculo da tensão de fadiga:
+sigma_fadiga_admissivel = Se * (a_ciclo / N_desejado) ** (1 / b_ciclo)
 
 # Resultados
 st.subheader("Resultados do Ensaio ISO 7173")
@@ -63,50 +72,69 @@ st.write(f"Momento da força do encosto: {M_encosto:.2f} Nm")
 st.write(f"Momento total aplicado na junta: {M_total/1000:.2f} Nm")
 st.write(f"Força vertical líquida: {F_vertical_liquida:.1f} N")
 st.write(f"Área resistente considerada: {A_resistente:.1f} mm²")
-st.write(f"Tensão de cisalhamento: {tau:.2f} MPa")
+st.write(f"Tensão por momento (tração): {sigma_momento:.2f} MPa")
+st.write(f"Tensão por compressão: {sigma_compressao:.2f} MPa")
+st.write(f"**Tensão total resultante na parede do tubo:** {sigma_total:.2f} MPa")
 st.write(f"**Ciclos desejados:** {N_desejado:,}")
-st.write(f"Limite de cisalhamento do material: {tau_max:.2f} MPa")
+st.write(f"Tensão de fadiga admissível para os ciclos: {sigma_fadiga_admissivel:.2f} MPa")
 
 # Análises
-if tau < tau_max:
-    st.success("✅ **APROVADO**: A tensão de cisalhamento está abaixo do limite de cisalhamento do material.")
+if sigma_total < Sy:
+    st.success("✅ **APROVADO**: Não ocorre deformação permanente (Sy).")
+elif Sy <= sigma_total < Sut:
+    st.warning("⚠️ **ATENÇÃO**: Pode ocorrer deformação permanente, mas não ruptura imediata (entre Sy e Sut).")
 else:
-    st.error(f"❌ **FALHA**: A tensão de cisalhamento ({tau:.2f} MPa) excede o limite de cisalhamento do material ({tau_max:.2f} MPa).")
+    st.error("❌ **FALHA**: Pode ocorrer ruptura sob carga estática (acima de Sut).")
+
+if sigma_fadiga_admissivel > Sut:
+    if sigma_total < Sut:
+        st.success(f"✅ A tensão de fadiga admissível calculada ({sigma_fadiga_admissivel:.2f} MPa) excede o limite de ruptura ({Sut} MPa), mas como a tensão aplicada ({sigma_total:.2f} MPa) está abaixo de {Sut} MPa, o componente **NÃO ROMPE e RESISTE** ao ensaio de {N_desejado:,} ciclos.")
+    else:
+        st.error(f"❌ A tensão de fadiga admissível calculada ({sigma_fadiga_admissivel:.2f} MPa) excede o limite de ruptura ({Sut} MPa), e a tensão aplicada ({sigma_total:.2f} MPa) também excede, indicando ROMPIMENTO sob carga estática antes de {N_desejado:,} ciclos.")
+elif sigma_total < sigma_fadiga_admissivel:
+    st.success(f"✅ Resiste ao ensaio de fadiga de {N_desejado:,} ciclos.")
+else:
+    st.error(f"❌ Pode falhar antes de {N_desejado:,} ciclos no ensaio de fadiga.")
 
 # ============================
 # COMPARAÇÃO POR ESPESSURA
 # ============================
 st.subheader("📊 Comparação por Espessura no Ensaio ISO 7173")
 
-tensao_cisalhamento_totais = []
+sigma_totais = []
 
 for esp in espessuras_lista:
     A_resistente_esp = largura * esp
-    tau_esp = F_vertical_liquida / A_resistente_esp  # Cálculo da tensão de cisalhamento para cada espessura
-    tensao_cisalhamento_totais.append(tau_esp)
+    sigma_momento_esp = M_total / (A_resistente_esp * d)
+    sigma_compressao_esp = F_vertical_liquida / A_resistente_esp
+    sigma_total_esp = sigma_momento_esp - sigma_compressao_esp
+    sigma_totais.append(sigma_total_esp)
 
 cores = ['skyblue' if esp != espessura else 'orange' for esp in espessuras_lista]
 
 fig, ax = plt.subplots(figsize=(8, 5))
 bars = ax.bar(
     [str(e) for e in espessuras_lista],
-    tensao_cisalhamento_totais,
+    sigma_totais,
     color=cores
 )
 
-ax.axhline(tau_max, color='red', linestyle='--', label=f'Limite de cisalhamento = {tau_max:.2f} MPa')
+ax.axhline(Sut, color='red', linestyle='--', label=f'Sut = {Sut} MPa (Ruptura)')
+ax.axhline(Sy, color='orange', linestyle='--', label=f'Sy = {Sy:.0f} MPa (Deformação)')
+ax.axhline(sigma_fadiga_admissivel, color='green', linestyle='--',
+           label=f'Se ({N_desejado:,} ciclos) = {sigma_fadiga_admissivel:.0f} MPa (Fadiga)')
 
-for bar, tau in zip(bars, tensao_cisalhamento_totais):
+for bar, sigma in zip(bars, sigma_totais):
     height = bar.get_height()
-    ax.annotate(f"{tau:.2f}",
+    ax.annotate(f"{sigma:.0f}",
                 xy=(bar.get_x() + bar.get_width() / 2, height),
                 xytext=(0, 5),
                 textcoords="offset points",
                 ha='center', va='bottom')
 
 ax.set_xlabel("Espessura da Parede do Tubo (mm)")
-ax.set_ylabel("Tensão de Cisalhamento (MPa)")
-ax.set_title("Tensão de Cisalhamento x Espessura - Ensaio ISO 7173")
+ax.set_ylabel("Tensão Total (MPa)")
+ax.set_title("Tensão Total x Espessura - Ensaio ISO 7173")
 ax.grid(True, axis='y')
 ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=2)
 
@@ -115,8 +143,12 @@ st.pyplot(fig)
 # Comentário interpretativo
 st.info(f"""
 ✅ **Como interpretar:**
-- Cada barra mostra a tensão de cisalhamento para cada espessura do tubo vertical.
+- Cada barra mostra a tensão total para cada espessura do tubo vertical.
 - A barra **laranja** é a espessura selecionada pelo usuário.
-- Se a barra estiver **abaixo do limite de cisalhamento (linha vermelha)**, o tubo resiste à carga sem falha.
-- Se **acima do limite de cisalhamento**, pode ocorrer falha por cisalhamento.
+- Se a barra estiver **abaixo de Sy (linha laranja)**, não ocorre deformação.
+- Se entre **Sy e Sut (linha vermelha)**, pode ocorrer deformação permanente.
+- Se **acima de Sut**, pode ocorrer ruptura sob carga estática.
+- Se abaixo da linha verde (Se para {N_desejado:,} ciclos), resiste ao ensaio de fadiga.
 """)
+
+

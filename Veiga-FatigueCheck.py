@@ -11,7 +11,7 @@ considerando **o momento real do tubo horizontal + encosto** e **a força vertic
 
 # Entradas
 tipo_tubo = st.selectbox("Tipo de tubo", ["Quadrado", "Redondo"])
-largura = st.number_input("Largura (quadrado) ou diâmetro externo (redondo) do tubo horizontal (mm)", value=20)
+largura = st.number_input("Largura (quadrado) ou diâmetro externo (redondo) do tubo horizontal (mm)", value=22.22)
 espessuras_lista = [0.60, 0.75, 0.90, 1.06, 1.20, 1.50, 1.90]
 espessura = st.selectbox("Espessura da parede do tubo vertical (mm):", espessuras_lista, index=2)
 N_lista = [12500, 25000, 50000, 100000, 200000]
@@ -21,6 +21,7 @@ N_desejado = st.selectbox("Número de Ciclos:", N_lista, index=2)
 Sut = 310  # MPa
 Sy = 0.65 * Sut  # 201 MPa
 Se = 0.5 * Sut  # 155 MPa
+tau_max = 0.6 * Sut  # Limite de cisalhamento (60% de Sut)
 a_ciclo = 1e6
 b_ciclo = 5
 
@@ -47,17 +48,14 @@ M_total = M_fixo_horizontal_Nmm + M_encosto_Nmm  # Nmm
 # Força vertical líquida:
 F_vertical_liquida = F_vertical_per_foot - F_horizontal  # N
 
-# Área resistente:
+# Área resistente e área de cisalhamento
 if tipo_tubo == "Redondo":
-    A_resistente = (np.pi * (largura / 2)**2)*2  # área da seção superior do tubo
+    A_resistente = np.pi * (largura / 2)**2  # área do tubo redondo
 else:
     A_resistente = largura * espessura  # área do tubo quadrado
 
-
-# Braço de alavanca:
-d = largura / 2  # mm
-
 # Tensão por momento:
+d = largura / 2  # mm
 sigma_momento = M_total / (A_resistente * d)  # MPa
 
 # Tensão por compressão:
@@ -65,6 +63,9 @@ sigma_compressao = F_vertical_liquida / A_resistente  # MPa
 
 # Tensão total:
 sigma_total = sigma_momento - sigma_compressao  # MPa
+
+# Tensão de cisalhamento:
+tau = F_vertical_liquida / A_resistente  # MPa (tensão de cisalhamento)
 
 # Cálculo da tensão de fadiga:
 sigma_fadiga_admissivel = Se * (a_ciclo / N_desejado) ** (1 / b_ciclo)
@@ -79,6 +80,7 @@ st.write(f"Área resistente considerada: {A_resistente:.1f} mm²")
 st.write(f"Tensão por momento (tração): {sigma_momento:.2f} MPa")
 st.write(f"Tensão por compressão: {sigma_compressao:.2f} MPa")
 st.write(f"**Tensão total resultante na parede do tubo:** {sigma_total:.2f} MPa")
+st.write(f"Tensão de cisalhamento: {tau:.2f} MPa")
 st.write(f"**Ciclos desejados:** {N_desejado:,}")
 st.write(f"Tensão de fadiga admissível para os ciclos: {sigma_fadiga_admissivel:.2f} MPa")
 
@@ -106,13 +108,16 @@ else:
 st.subheader("📊 Comparação por Espessura no Ensaio ISO 7173")
 
 sigma_totais = []
+tensao_cisalhamento_totais = []
 
 for esp in espessuras_lista:
     A_resistente_esp = largura * esp
     sigma_momento_esp = M_total / (A_resistente_esp * d)
     sigma_compressao_esp = F_vertical_liquida / A_resistente_esp
     sigma_total_esp = sigma_momento_esp - sigma_compressao_esp
+    tau_esp = F_vertical_liquida / A_resistente_esp  # Cálculo da tensão de cisalhamento para cada espessura
     sigma_totais.append(sigma_total_esp)
+    tensao_cisalhamento_totais.append(tau_esp)
 
 cores = ['skyblue' if esp != espessura else 'orange' for esp in espessuras_lista]
 
@@ -128,9 +133,9 @@ ax.axhline(Sy, color='orange', linestyle='--', label=f'Sy = {Sy:.0f} MPa (Deform
 ax.axhline(sigma_fadiga_admissivel, color='green', linestyle='--',
            label=f'Se ({N_desejado:,} ciclos) = {sigma_fadiga_admissivel:.0f} MPa (Fadiga)')
 
-for bar, sigma in zip(bars, sigma_totais):
+for bar, sigma, tau in zip(bars, sigma_totais, tensao_cisalhamento_totais):
     height = bar.get_height()
-    ax.annotate(f"{sigma:.0f}",
+    ax.annotate(f"{sigma:.0f}\n{tau:.0f}",
                 xy=(bar.get_x() + bar.get_width() / 2, height),
                 xytext=(0, 5),
                 textcoords="offset points",
@@ -153,4 +158,5 @@ st.info(f"""
 - Se entre **Sy e Sut (linha vermelha)**, pode ocorrer deformação permanente.
 - Se **acima de Sut**, pode ocorrer ruptura sob carga estática.
 - Se abaixo da linha verde (Se para {N_desejado:,} ciclos), resiste ao ensaio de fadiga.
+- A tensão de cisalhamento também é indicada para cada espessura (em cima das barras).
 """)

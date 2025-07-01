@@ -112,7 +112,7 @@ fig, ax = plt.subplots(figsize=(8, 5))
 bars = ax.bar(
     [str(e) for e in espessuras_lista],
     sigma_totais,
-    color=cores
+    color=cores)
 
 ax.axhline(Tau, color='Red', linestyle='--', label=f'Tau = {Tau:.0f} MPa (Cisalhamento)')
 ax.axhline(sigma_fadiga_admissivel, color='green', linestyle='--',

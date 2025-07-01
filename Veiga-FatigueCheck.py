@@ -19,8 +19,8 @@ N_desejado = st.selectbox("Número de Ciclos:", N_lista, index=2)
 
 # Constantes materiais e do ensaio
 Sut = 310  # MPa
-Sy = 0.65 * Sut  # 201 MPa
-Se = 0.5 * Sut  # 155 MPa
+Tau = 0.6 * Sut  # Tensão de cisalhamento
+Se = 0.5 * Sut  # Tensão de deformação
 a_ciclo = 1e6
 b_ciclo = 5
 
@@ -85,10 +85,10 @@ st.write(f"**Ciclos desejados:** {N_desejado:,}")
 st.write(f"Tensão de fadiga admissível para os ciclos: {sigma_fadiga_admissivel:.2f} MPa")
 
 # Análises
-if sigma_total < Sy:
-    st.success("✅ **APROVADO**: Não ocorre deformação permanente (Sy).")
-elif Sy <= sigma_total < Sut:
-    st.warning("⚠️ **ATENÇÃO**: Pode ocorrer deformação permanente, mas não ruptura imediata (entre Sy e Sut).")
+if sigma_total < Tau:
+    st.success("✅ **APROVADO**: Não ocorre deformação permanente (Tau).")
+elif Tau <= sigma_total < Sut:
+    st.warning("⚠️ **ATENÇÃO**: Pode ocorrer deformação permanente, mas não ruptura imediata (entre Tau e Sut).")
 else:
     st.error("❌ **FALHA**: Pode ocorrer ruptura sob carga estática (acima de Sut).")
 
@@ -126,7 +126,7 @@ bars = ax.bar(
 )
 
 ax.axhline(Sut, color='red', linestyle='--', label=f'Sut = {Sut} MPa (Ruptura)')
-ax.axhline(Sy, color='orange', linestyle='--', label=f'Sy = {Sy:.0f} MPa (Deformação)')
+ax.axhline(Tau, color='orange', linestyle='--', label=f'Tau = {Tau:.0f} MPa (Deformação)')
 ax.axhline(sigma_fadiga_admissivel, color='green', linestyle='--',
            label=f'Se ({N_desejado:,} ciclos) = {sigma_fadiga_admissivel:.0f} MPa (Fadiga)')
 
@@ -151,8 +151,8 @@ st.info(f"""
 ✅ **Como interpretar:**
 - Cada barra mostra a tensão total para cada espessura do tubo vertical.
 - A barra **laranja** é a espessura selecionada pelo usuário.
-- Se a barra estiver **abaixo de Sy (linha laranja)**, não ocorre deformação.
-- Se entre **Sy e Sut (linha vermelha)**, pode ocorrer deformação permanente.
+- Se a barra estiver **abaixo de Tau (linha laranja)**, não ocorre deformação.
+- Se entre **Tau e Sut (linha vermelha)**, pode ocorrer deformação permanente.
 - Se **acima de Sut**, pode ocorrer ruptura sob carga estática.
 - Se abaixo da linha verde (Se para {N_desejado:,} ciclos), resiste ao ensaio de fadiga.
 """)

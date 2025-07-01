@@ -11,7 +11,7 @@ considerando **o momento real do tubo horizontal + encosto** e **a força vertic
 
 # Entradas
 tipo_tubo = st.selectbox("Tipo de tubo", ["Quadrado", "Redondo"])
-largura = st.number_input("Largura (quadrado) ou diâmetro externo (redondo) do tubo horizontal (mm)", value=22.22)
+largura = st.number_input("Largura (quadrado) ou diâmetro externo (redondo) do tubo horizontal (mm)", value=20)
 espessuras_lista = [0.60, 0.75, 0.90, 1.06, 1.20, 1.50, 1.90]
 espessura = st.selectbox("Espessura da parede do tubo vertical (mm):", espessuras_lista, index=2)
 N_lista = [12500, 25000, 50000, 100000, 200000]
@@ -48,7 +48,11 @@ M_total = M_fixo_horizontal_Nmm + M_encosto_Nmm  # Nmm
 F_vertical_liquida = F_vertical_per_foot - F_horizontal  # N
 
 # Área resistente:
-A_resistente = largura * espessura  # mm²
+if tipo_tubo == "Redondo":
+    A_resistente = np.pi * (largura / 2)**2  # área do tubo redondo
+else:
+    A_resistente = largura * espessura  # área do tubo quadrado
+
 
 # Braço de alavanca:
 d = largura / 2  # mm

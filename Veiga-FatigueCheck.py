@@ -49,7 +49,7 @@ F_vertical_liquida = F_vertical_per_foot - F_horizontal  # N
 
 # Área resistente:
 if tipo_tubo == "Redondo":
-    A_resistente = np.pi * (largura / 2)**2  # área do tubo redondo
+    A_resistente = (np.pi * (largura / 2)**2)*2  # área da seção superior do tubo
 else:
     A_resistente = largura * espessura  # área do tubo quadrado
 

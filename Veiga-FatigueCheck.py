@@ -48,7 +48,13 @@ M_total = M_fixo_horizontal_Nmm + M_encosto_Nmm  # Nmm
 F_vertical_liquida = F_vertical_per_foot - F_horizontal  # N
 
 # Área resistente:
-A_resistente = largura * espessura  # mm²
+if tipo_tubo == 'quadrado':
+    A_resistente = largura * espessura  # mm²
+else:
+    # Para tubo redondo, área da parede: A = π * (D_ext^2 - D_int^2) / 4
+    D_ext = largura  # onde 'largura' aqui é o diâmetro externo
+    D_int = D_ext - 2 * espessura
+    A_resistente = ((np.pi * (D_ext**2 - D_int**2)) / 4)/2  # mm²
 
 # Braço de alavanca:
 d = largura / 2  # mm

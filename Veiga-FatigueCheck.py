@@ -111,11 +111,15 @@ st.subheader("📊 Comparação por Espessura no Ensaio ISO 7173")
 sigma_totais = []
 
 for esp in espessuras_lista:
-    A_resistente_esp = largura * esp
-    sigma_momento_esp = M_total / (A_resistente_esp * d)
-    sigma_compressao_esp = F_vertical_liquida / A_resistente_esp
-    sigma_total_esp = sigma_momento_esp - sigma_compressao_esp
-    sigma_totais.append(sigma_total_esp)
+
+    if tipo_tubo == 'quadrado':
+        A_resistente = largura * espessura  # mm²
+    else:
+        # Para tubo redondo, área da parede: A = π * (D_ext^2 - D_int^2) / 4
+        D_ext = largura  # onde 'largura' aqui é o diâmetro externo
+        D_int = D_ext - 2 * espessura
+        A_resistente = (np.pi * (D_ext**2 - D_int**2)) / 4  # mm²
+
 
 cores = ['skyblue' if esp != espessura else 'orange' for esp in espessuras_lista]
 

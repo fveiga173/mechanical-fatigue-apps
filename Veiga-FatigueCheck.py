@@ -18,11 +18,11 @@ N_lista = [12500, 25000, 50000, 100000, 200000]
 N_desejado = st.selectbox("Número de Ciclos:", N_lista, index=2)
 
 # Constantes materiais e do ensaio
-Sut = 310  # MPa
-Sy = 0.65 * Sut  # 201 MPa
-Se = 0.5 * Sut  # 155 MPa
-a_ciclo = 1e6
-b_ciclo = 5
+Sut = 310  # Limite de Ruptura em MPa
+Sy = 0.65 * Sut  # Limite de escoamento em MPa
+Se = 0.5 * Sut  # Limite de fadiga em MPa (ciclo de vida infinito)
+a_ciclo = 1e6  # Parametros para posterior calculo do ciclo de vida no N desejado
+b_ciclo = 5    # Parametros para posterior calculo do ciclo de vida no N desejado
 
 # Cargas do ensaio ISO 7173
 F_vertical_per_foot = 237.5  # N por pé (assento)
@@ -44,9 +44,6 @@ M_encosto_Nmm = M_encosto * 1000  # Nmm
 # Momento total na junta:
 M_total = M_fixo_horizontal_Nmm + M_encosto_Nmm  # Nmm
 
-# Força vertical líquida:
-F_vertical_liquida = F_vertical_per_foot - F_horizontal  # N
-
 # Área resistente:
 if tipo_tubo == 'Quadrado':
     A_resistente = largura * espessura  # mm²
@@ -61,13 +58,8 @@ else:
 d = largura / 2  # mm
 
 # Tensão por momento:
-sigma_momento = M_total / (A_resistente * d)  # MPa
+Sigma_total = M_total / (A_resistente * d)  # MPa
 
-# Tensão por compressão:
-sigma_compressao = F_vertical_liquida / A_resistente  # MPa
-
-# Tensão total:
-sigma_total = sigma_momento - sigma_compressao  # MPa
 
 # Cálculo da tensão de fadiga:
 sigma_fadiga_admissivel = Se * (a_ciclo / N_desejado) ** (1 / b_ciclo)
@@ -76,12 +68,8 @@ sigma_fadiga_admissivel = Se * (a_ciclo / N_desejado) ** (1 / b_ciclo)
 st.subheader("Resultados do Ensaio ISO 7173")
 st.write(f"Momento do tubo horizontal: {M_fixo_horizontal:.2f} Nm")
 st.write(f"Momento da força do encosto: {M_encosto:.2f} Nm")
-st.write(f"Momento total aplicado na junta: {M_total/1000:.2f} Nm")
-st.write(f"Força vertical líquida: {F_vertical_liquida:.1f} N")
 st.write(f"Área resistente considerada: {A_resistente:.1f} mm²")
-st.write(f"Tensão por momento (tração): {sigma_momento:.2f} MPa")
-st.write(f"Tensão por compressão: {sigma_compressao:.2f} MPa")
-st.write(f"**Tensão total resultante na parede do tubo:** {sigma_total:.2f} MPa")
+st.write(f"Tensão por momento resultante na parede do tubo (tração): {sigma_total:.2f} MPa")
 st.write(f"**Ciclos desejados:** {N_desejado:,}")
 st.write(f"Tensão de fadiga admissível para os ciclos: {sigma_fadiga_admissivel:.2f} MPa")
 
@@ -119,9 +107,7 @@ for esp in espessuras_lista:
         A_resistente = ((np.pi * (D_ext**2 - D_int**2)) / 4)/2  # mm²
 
     d = largura / 2  # mm
-    sigma_momento = M_total / (A_resistente * d)
-    sigma_compressao = F_vertical_liquida / A_resistente
-    sigma_total = sigma_momento - sigma_compressao
+    sigma_total = M_total / (A_resistente * d)
 
    
     sigma_totais.append(sigma_total)

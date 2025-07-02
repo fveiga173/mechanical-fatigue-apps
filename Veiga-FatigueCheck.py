@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 # Título e descrição
-st.title("Veiga FatigueCheck - Ensaio ISO 7173")
+st.title("Checagem de quebra e fadiga em cadeiras - Baseado na ISO 7173")
 st.markdown("""
 Este app verifica **deformação, ruptura e resistência a ciclos definidos** no ensaio de cadeiras metálicas conforme a **ISO 7173**, 
 considerando **o momento real do tubo horizontal + encosto**.

@@ -13,7 +13,7 @@ considerando **o momento real do tubo horizontal + encosto**.
 # Imagem
 try:
     diagramas = Image.open("A_pair_of_technical_engineering_diagrams_in_black_.png")
-    st.image(diagramas, caption="Diagramas de análise: cadeira inclinada e cadeira em 4 apoios")
+    st.image(diagramas)
 except:
     st.info("Imagem de diagramas não encontrada no diretório. Coloque a imagem no mesmo repositório para visualização.")
 

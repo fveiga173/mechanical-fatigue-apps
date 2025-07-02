@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+from PIL import Image
 
 # Título e descrição
 st.title("Veiga FatigueCheck - Ensaio ISO 7173")
@@ -8,6 +9,11 @@ st.markdown("""
 Este app verifica **deformação, ruptura e resistência a ciclos definidos** no ensaio de cadeiras metálicas conforme a **ISO 7173**, 
 considerando **o momento real do tubo horizontal + encosto** e **a força vertical líquida**.
 """)
+
+try:
+    dcl_image = Image.open("A_pair_of_technical_engineering_diagrams_in_black_.png")
+    st.image(dcl_image)
+
 
 # Entradas
 tipo_tubo = st.selectbox("Tipo de tubo", ["Quadrado", "Redondo"])

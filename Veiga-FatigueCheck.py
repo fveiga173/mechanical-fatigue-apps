@@ -58,7 +58,7 @@ else:
 d = largura / 2  # mm
 
 # Tensão por momento:
-Sigma_total = M_total / (A_resistente * d)  # MPa
+sigma_total = M_total / (A_resistente * d)  # MPa
 
 
 # Cálculo da tensão de fadiga:

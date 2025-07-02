@@ -7,7 +7,7 @@ from PIL import Image
 st.title("Checagem de quebra e fadiga em cadeiras - Baseado na ISO 7173")
 st.markdown("""
 Este app verifica **deformação, ruptura e resistência a ciclos definidos** no ensaio de cadeiras metálicas conforme a **ISO 7173**, 
-considerando **o momento real do tubo horizontal + encosto**.
+considerando **o momento real do tubo horizontal + tubo do encosto**.
 """)
 st.markdown("""
 Felipe Veiga - 01 de julho e 2025 **.

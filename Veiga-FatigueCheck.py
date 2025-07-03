@@ -103,16 +103,13 @@ sigma_totais = []
 
 for esp in espessuras_lista:
     if tipo_tubo == 'Quadrado':
-        A_resistente = largura * esp  # Corrigir aqui para usar 'esp' do loop
+    
+        sigma_total= (M_total*largura/2)/(0.707*espessura*((largura*(largura**2)/2)))
+    
     else:
-        D_ext = largura
-        D_int = D_ext - 2 * esp  # Corrigir aqui para usar 'esp' do loop
-        A_resistente = ((np.pi * (D_ext**2 - D_int**2)) / 4)/2  # mm²
+ 
+        sigma_total= (M_total*largura)/(0.707*espessura*((largura*largura**2)/2))
 
-    d = largura / 2  # mm
-    sigma_total = M_total / (A_resistente * d)
-
-   
     sigma_totais.append(sigma_total)
     
 cores = ['skyblue' if esp != espessura else 'orange' for esp in espessuras_lista]

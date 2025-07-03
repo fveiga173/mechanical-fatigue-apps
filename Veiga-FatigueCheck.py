@@ -55,21 +55,14 @@ M_encosto_Nmm = M_encosto * 1000  # Nmm
 # Momento total na junta:
 M_total = M_fixo_horizontal_Nmm + M_encosto_Nmm  # Nmm
 
-# Área resistente:
+# Tensão na Garganta da solda
 if tipo_tubo == 'Quadrado':
-    A_resistente = largura * espessura  # mm²
+    
+    sigma_total= (M_total*largura)/(0.707*espessura*((largura*largura**2)/2))
+    
 else:
-    # Para tubo redondo, área da parede: A = π * (D_ext^2 - D_int^2) / 4
-    D_ext = largura  # onde 'largura' aqui é o diâmetro externo
-    D_int = D_ext - 2 * espessura
-    A_resistente = ((np.pi * (D_ext**2 - D_int**2)) / 4)/2  # mm²
-
-
-# Braço de alavanca:
-d = largura / 2  # mm
-
-# Tensão por momento:
-sigma_total = M_total / (A_resistente * d)  # MPa
+ 
+    sigma_total= (M_total*largura)/(0.707*espessura*((largura*largura**2)/2))
 
 
 # Cálculo da tensão de fadiga:

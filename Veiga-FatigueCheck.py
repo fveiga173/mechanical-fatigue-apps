@@ -102,6 +102,7 @@ st.subheader("📊 Comparação por Espessura no Ensaio ISO 7173")
 sigma_totais = []
 
 for esp in espessuras_lista:
+    
     if tipo_tubo == 'Quadrado':
     
         sigma_total= (M_total*largura/2)/(0.707*espessura*((largura*(largura**2)/2)))
@@ -110,7 +111,7 @@ for esp in espessuras_lista:
  
         sigma_total= (M_total*largura)/(0.707*espessura*((largura*largura**2)/2))
 
-    sigma_totais.append(sigma_total)
+sigma_totais.append(sigma_total)
     
 cores = ['skyblue' if esp != espessura else 'orange' for esp in espessuras_lista]
 

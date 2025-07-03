@@ -10,7 +10,7 @@ Este app verifica **deformação, ruptura e resistência a ciclos definidos** no
 considerando **o momento real do tubo horizontal + tubo do encosto**.
 """)
 st.markdown("""
-Felipe Veiga - 01 de julho e 2025 **.
+Felipe Veiga - 01 de julho e 2025
 """)
 
 # Imagem
@@ -58,7 +58,7 @@ M_total = M_fixo_horizontal_Nmm + M_encosto_Nmm  # Nmm
 # Tensão na Garganta da solda
 if tipo_tubo == 'Quadrado':
     
-    sigma_total= (M_total*largura)/(0.707*espessura*((largura*largura**2)/2))
+    sigma_total= (M_total*largura/2)/(0.707*espessura*((largura*(largura**2)/2))
     
 else:
  

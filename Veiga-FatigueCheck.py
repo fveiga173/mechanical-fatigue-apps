@@ -64,7 +64,7 @@ else:
 
     I_Redondo = np.pi*(largura/2)**3
  
-    sigma_total = (M_total * largura) / (0.707 * espessura * I_Redondo)
+    sigma_total = (M_total * largura/2) / (0.707 * espessura * I_Redondo)
 
 
 

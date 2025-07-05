@@ -57,8 +57,9 @@ M_total = M_fixo_horizontal_Nmm + M_encosto_Nmm  # Nmm
 
 # Tensão na Garganta da solda
 if tipo_tubo == 'Quadrado':
-    
-    sigma_total= (M_total*largura/2)/(0.707*espessura*((largura*(largura**2)/2)))
+
+    I_Quadrado=((largura*(largura**2)/2))
+    sigma_total= (M_total*largura/2)/(0.707*espessura*I_Quadrado)
     
 else:
 
@@ -107,12 +108,15 @@ sigma_totais = []
 for esp in espessuras_lista:
     if tipo_tubo == 'Quadrado':
     
-        sigma_total= (M_total*largura/2)/(0.707*esp*((largura*(largura**2)/2)))
+        I_Quadrado=((largura*(largura**2)/2))
+        sigma_total= (M_total*largura/2)/(0.707*espessura*I_Quadrado)
     
     else:
- 
-        sigma_total= (M_total*largura)/(0.707*esp*((largura*largura**2)/2))
-   
+        
+         I_Redondo = np.pi*(largura/2)**3
+         sigma_total = (M_total * largura/2) / (0.707 * espessura * I_Redondo)
+    
+    
     sigma_totais.append(sigma_total)
     
 

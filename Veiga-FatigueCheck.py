@@ -32,23 +32,13 @@ except:
 tipo_tubo = st.selectbox("Tipo de tubo", ["Quadrado", "Redondo"])
 
 largura = st.number_input(
-    "Largura (quadrado) ou diâmetro externo (redondo) do tubo horizontal (mm)",
-    value = 20
-)
+    "Largura (quadrado) ou diâmetro externo (redondo) do tubo horizontal (mm)",    value = 20)
 
 espessuras_lista = [0.60, 0.75, 0.90, 1.06, 1.20, 1.50, 1.90]
-espessura = st.selectbox(
-    "Espessura da parede do tubo vertical (mm):",
-    espessuras_lista,
-    index = 2
-)
+espessura = st.selectbox(    "Espessura da parede do tubo vertical (mm):",    espessuras_lista,    index = 2)
 
 N_lista = [5_000, 12_500, 25_000, 50_000, 100_000, 200_000]
-N_desejado = st.selectbox(
-    "Número de Ciclos:",
-    N_lista,
-    index = 2
-)
+N_desejado = st.selectbox(    "Número de Ciclos:",    N_lista,    index = 2)
 
 # ========================
 # Constantes materiais e do ensaio
@@ -127,24 +117,23 @@ else:
 
 if sigma_fadiga_admissivel > Sut:
     if sigma_total < Sut:
-        st.success(
-            f"✅ A tensão de fadiga admissível calculada ({sigma_fadiga_admissivel:.2f} MPa) excede o limite de ruptura ({Sut} MPa), "
+        st.success(f"✅ A tensão de fadiga admissível calculada ({sigma_fadiga_admissivel:.2f} MPa) excede o limite de ruptura ({Sut} MPa), "
             f"mas como a tensão aplicada ({sigma_total:.2f} MPa) está abaixo de {Sut} MPa, o componente **NÃO ROMPE e RESISTE** "
-            f"ao ensaio de {N_desejado:,} ciclos."
-        )
+            f"ao ensaio de {N_desejado:,} ciclos.")
     else:
-        st.error(
-            f"❌ A tensão de fadiga admissível calculada ({sigma_fadiga_admissivel:.2f} MPa) excede o limite de ruptura ({Sut} MPa), "
-            f"e a tensão aplicada ({sigma_total:.2f} MPa) também excede, indicando ROMPIMENTO sob carga estática antes de {N_desejado:,} ciclos."
-        )
+        st.error(f"❌ A tensão de fadiga admissível calculada ({sigma_fadiga_admissivel:.2f} MPa) excede o limite de ruptura ({Sut} MPa), "
+            f"e a tensão aplicada ({sigma_total:.2f} MPa) também excede, indicando ROMPIMENTO sob carga estática antes de {N_desejado:,} ciclos.")
+
 elif sigma_total < sigma_fadiga_admissivel:
     st.success(f"✅ Resiste ao ensaio de fadiga de {N_desejado:,} ciclos.")
+
 else:
     st.error(f"❌ Pode falhar antes de {N_desejado:,} ciclos no ensaio de fadiga.")
 
 # ========================
 # Comparação por espessura
 # ========================
+
 st.subheader("📊 Comparação por Espessura no Ensaio ISO 7173")
 
 sigma_totais = []
@@ -158,38 +147,20 @@ for esp in espessuras_lista:
         sigma_total_esp = (M_total * largura / 2) / (0.707 * esp * I_redondo)
     sigma_totais.append(sigma_total_esp)
 
-cores = [
-    'skyblue' if esp != espessura else 'orange'
-    for esp in espessuras_lista
-]
+cores = [    'skyblue' if esp != espessura else 'orange'
+    for esp in espessuras_lista]
 
 fig, ax = plt.subplots(figsize = (8, 5))
 
-bars = ax.bar(
-    [str(e) for e in espessuras_lista],
-    sigma_totais,
-    color = cores
-)
+bars = ax.bar([str(e) for e in espessuras_lista],    sigma_totais,    color = cores)
 
 ax.axhline(Sut, color = 'red', linestyle = '--', label = f'Sut = {Sut} MPa (Ruptura)')
 ax.axhline(Sy, color = 'orange', linestyle = '--', label = f'Sy = {Sy:.0f} MPa (Deformação)')
-ax.axhline(
-    sigma_fadiga_admissivel,
-    color = 'green',
-    linestyle = '--',
-    label = f'Se ({N_desejado:,} ciclos) = {sigma_fadiga_admissivel:.0f} MPa (Fadiga)'
-)
+ax.axhline(sigma_fadiga_admissivel, color = 'green', linestyle = '--', label = f'Se ({N_desejado:,} ciclos) = {sigma_fadiga_admissivel:.0f} MPa (Fadiga)')
 
 for bar, sigma in zip(bars, sigma_totais):
     height = bar.get_height()
-    ax.annotate(
-        f"{sigma:.0f}",
-        xy = (bar.get_x() + bar.get_width() / 2, height),
-        xytext = (0, 5),
-        textcoords = "offset points",
-        ha = 'center',
-        va = 'bottom'
-    )
+    ax.annotate(f"{sigma:.0f}", xy = (bar.get_x() + bar.get_width() / 2, height), xytext = (0, 5), textcoords = "offset points", ha = 'center', va = 'bottom')
 
 ax.set_xlabel("Espessura da Parede do Tubo (mm)")
 ax.set_ylabel("Tensão Total (MPa)")
@@ -209,5 +180,4 @@ st.info(f"""
 - Se a barra estiver **abaixo de Sy (linha laranja)**, não ocorre deformação.
 - Se entre **Sy e Sut (linha vermelha)**, pode ocorrer deformação permanente.
 - Se **acima de Sut**, pode ocorrer ruptura sob carga estática.
-- Se abaixo da linha verde (Se para {N_desejado:,} ciclos), resiste ao ensaio de fadiga.
-""")
+- Se abaixo da linha verde (Se para {N_desejado:,} ciclos), resiste ao ensaio de fadiga.""")

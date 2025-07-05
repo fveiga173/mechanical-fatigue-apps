@@ -62,7 +62,7 @@ if tipo_tubo == 'Quadrado':
     
 else:
  
-    sigma_total= (M_total*largura)/(0.707*espessura*(Np.Pi*((largura/2)**3))
+    sigma_total= (M_total*largura)/(0.707*espessura*(Np.Pi*((largura/2)**3)))
 
 
 # Cálculo da tensão de fadiga:

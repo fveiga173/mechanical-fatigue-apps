@@ -86,7 +86,7 @@ if tipo_tubo == 'Quadrado':
     I_quadrado = largura * (largura ** 2) / 2
     sigma_total = (M_total * largura / 2) / (0.707 * espessura * I_quadrado)
 else:
-    I_redondo = (largura**2/6)*(3*largura+largura)
+    I_redondo = ((largura**2)/6)*(3*largura+largura)
     sigma_total = (M_total * largura / 2) / (0.707 * espessura * I_redondo)
 
 # ========================

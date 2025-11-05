@@ -102,6 +102,7 @@ st.subheader("Resultados do Ensaio ISO 7173")
 st.write(f"Momento do tubo horizontal: {M_fixo_horizontal:.2f} Nm")
 st.write(f"Momento da força do encosto: {M_encosto:.2f} Nm")
 st.write(f"Tensão na garganta da solda: {sigma_total:.2f} MPa")
+st.write(f"Inercia Tubo Redondo: {I_redondo:.2f} MPa")
 st.write(f"**Ciclos desejados:** {N_desejado:,}")
 st.write(f"Tensão de fadiga admissível para os ciclos: {sigma_fadiga_admissivel:.2f} MPa")
 
